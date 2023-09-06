@@ -1,5 +1,8 @@
 import 'package:app/constants.dart';
+import 'package:app/pages/auth/login/login.dart';
 import 'package:app/pages/auth/onboarding.dart';
+import 'package:app/pages/auth/register/courier.dart';
+import 'package:app/pages/auth/register/sme.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -50,7 +53,11 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
             Image.asset("images/welcome.png"),
             const Text("Sign up as ..."),
             MaterialButton(
-              onPressed: () {},
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SMERegistrationPage(),
+                ),
+              ),
               color: accentColor,
               height: 50,
               minWidth: 300,
@@ -63,7 +70,11 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
               ),
             ),
             MaterialButton(
-              onPressed: () {},
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const CourierRegistrationPage(),
+                ),
+              ),
               color: accentColor,
               height: 50,
               minWidth: 300,
@@ -75,18 +86,25 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                 style: TextStyle(color: secondaryColor),
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Already have an account?",
-                  style: TextStyle(color: accentColor),
+            GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const LoginPage(),
                 ),
-                Text(
-                  "Sign in",
-                  style: TextStyle(color: primaryColor),
-                )
-              ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Already have an account?",
+                    style: TextStyle(color: accentColor),
+                  ),
+                  Text(
+                    "Sign in",
+                    style: TextStyle(color: primaryColor),
+                  )
+                ],
+              ),
             )
           ],
         ),
