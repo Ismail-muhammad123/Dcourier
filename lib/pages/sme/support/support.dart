@@ -20,7 +20,7 @@ class _SupportPageState extends State<SupportPage> {
             decoration: BoxDecoration(
               color: accentColor,
               borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(50),
+                bottom: Radius.circular(25),
               ),
             ),
             padding: EdgeInsets.all(18.0),
