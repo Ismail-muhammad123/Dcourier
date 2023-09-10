@@ -23,7 +23,7 @@ class _SupportPageState extends State<SupportPage> {
                 bottom: Radius.circular(25),
               ),
             ),
-            padding: EdgeInsets.all(18.0),
+            padding: const EdgeInsets.all(18.0),
             child: SafeArea(
               child: Column(
                 children: [

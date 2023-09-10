@@ -5,6 +5,7 @@ import 'package:app/pages/sme/support/support.dart';
 import 'package:app/widgets/buttons.dart';
 import 'package:flutter/material.dart';
 import '../pages/sme/tracking.dart/tracking.dart';
+import '../pages/wallet/wallet_home.dart';
 import 'menu_tiles.dart';
 
 class Menu extends StatefulWidget {
@@ -108,7 +109,7 @@ class MenuState extends State<Menu> {
                   trailing: Icons.arrow_right,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const TrackingPage(),
+                      builder: (context) => const Wallet(),
                     ),
                   ),
                 ),
