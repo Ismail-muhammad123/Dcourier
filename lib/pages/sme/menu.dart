@@ -4,8 +4,8 @@ import 'package:app/pages/sme/profile/edit_profile.dart';
 import 'package:app/pages/sme/support/support.dart';
 import 'package:app/widgets/buttons.dart';
 import 'package:flutter/material.dart';
-import '../pages/sme/tracking.dart/tracking.dart';
-import '../pages/wallet/wallet_home.dart';
+import './tracking/tracking.dart';
+import '../wallet/wallet_home.dart';
 import 'menu_tiles.dart';
 
 class Menu extends StatefulWidget {
@@ -135,16 +135,52 @@ class MenuState extends State<Menu> {
                     ),
                   ),
                 ),
-                Divider(),
+                const Divider(),
                 MenuTile(
                   title: "Logout",
                   leading: Icons.logout,
                   trailing: Icons.arrow_right,
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const TrackingPage(),
-                    ),
-                  ),
+                  onTap: () async {
+                    var res = await showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: Colors.white,
+                        surfaceTintColor: Colors.white,
+                        content: const Text(
+                          "logout?",
+                          textAlign: TextAlign.center,
+                        ),
+                        actionsAlignment: MainAxisAlignment.spaceEvenly,
+                        actions: [
+                          MaterialButton(
+                            onPressed: () => Navigator.of(context).pop(0),
+                            color: tartiaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text("No"),
+                          ),
+                          MaterialButton(
+                            onPressed: () => Navigator.of(context).pop(1),
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: const BorderSide(
+                                color: Colors.red,
+                                width: 1,
+                              ),
+                            ),
+                            child: const Text(
+                              "Yes",
+                              style: TextStyle(
+                                color: Colors.red,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    );
+                  },
                 ),
                 Divider(),
               ],

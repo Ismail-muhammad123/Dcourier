@@ -3,12 +3,23 @@ import 'package:flutter/material.dart';
 import 'constants.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
+import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
+
+AndroidMapRenderer mapRenderer = AndroidMapRenderer.platformDefault;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  final GoogleMapsFlutterPlatform mapsImplementation =
+      GoogleMapsFlutterPlatform.instance;
+  if (mapsImplementation is GoogleMapsFlutterAndroid) {
+    // mapRenderer = await mapsImplementation
+    //     .initializeWithRenderer(AndroidMapRenderer.latest);
+  }
   runApp(const DcourierApp());
 }
 
@@ -19,7 +30,7 @@ class DcourierApp extends StatelessWidget {
     return MaterialApp(
       title: 'DCourier Mobile App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: primaryColor),
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,

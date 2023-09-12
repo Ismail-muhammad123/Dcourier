@@ -1,7 +1,6 @@
 import 'package:app/constants.dart';
-import 'package:app/widgets/menu.dart';
+import '../menu.dart';
 import 'package:flutter/material.dart';
-
 import '../../../widgets/buttons.dart';
 import '../available_couriers.dart';
 import '../notifications/notifications.dart';

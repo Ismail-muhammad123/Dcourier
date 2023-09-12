@@ -1,5 +1,6 @@
 import 'package:app/constants.dart';
 import 'package:app/pages/auth/reset_password.dart';
+import 'package:app/pages/courier/home/courier_home.dart';
 import 'package:app/pages/sme/home/sme_home.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +15,15 @@ class _LoginPageState extends State<LoginPage> {
   bool _showPassword = false;
   bool _loading = false;
 
-  _login() async {
+  _loginCOURIER() async {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const CourierHome(),
+      ),
+    );
+  }
+
+  _loginSME() async {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const SMEHomePage(),
@@ -31,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
           child: Center(
             child: SingleChildScrollView(
               child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.9,
+                height: MediaQuery.of(context).size.height,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -105,14 +114,31 @@ class _LoginPageState extends State<LoginPage> {
                               color: primaryColor,
                             )
                           : MaterialButton(
-                              onPressed: _login,
+                              onPressed: _loginSME,
                               minWidth: double.maxFinite,
                               height: 50,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               color: accentColor,
-                              child: const Text("Login"),
+                              child: const Text("Login SME"),
+                            ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: _loading
+                          ? CircularProgressIndicator(
+                              color: primaryColor,
+                            )
+                          : MaterialButton(
+                              onPressed: _loginCOURIER,
+                              minWidth: double.maxFinite,
+                              height: 50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              color: accentColor,
+                              child: const Text("Login COURIER"),
                             ),
                     ),
                     Padding(
