@@ -2,6 +2,7 @@ import 'package:app/constants.dart';
 import 'package:app/pages/auth/reset_password.dart';
 import 'package:app/pages/courier/home/courier_home.dart';
 import 'package:app/pages/sme/home/sme_home.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -14,6 +15,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _showPassword = false;
   bool _loading = false;
+  var _auth = FirebaseAuth.instance;
 
   _loginCOURIER() async {
     Navigator.of(context).push(
@@ -28,6 +30,15 @@ class _LoginPageState extends State<LoginPage> {
       MaterialPageRoute(
         builder: (context) => const SMEHomePage(),
       ),
+    );
+  }
+
+  _registerWithPhoneNumber() async {
+    await _auth.verifyPhoneNumber(
+      verificationCompleted: (phoneAuthCredential) {},
+      verificationFailed: (error) {},
+      codeSent: (verificationId, forceResendingToken) {},
+      codeAutoRetrievalTimeout: (verificationId) {},
     );
   }
 

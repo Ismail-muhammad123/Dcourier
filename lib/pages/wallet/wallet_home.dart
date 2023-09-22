@@ -273,21 +273,21 @@ class _WalletState extends State<Wallet> {
                 borderRadius: BorderRadius.circular(10),
                 color: tartiaryColor,
               ),
-              padding: EdgeInsets.all(6.0),
+              padding: const EdgeInsets.all(6.0),
               child: Row(
                 children: [
-                  Text(
+                  const Text(
                     "Linked Bank Account: ",
                     style: TextStyle(
                       color: Colors.grey,
                       fontSize: 12.0,
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 6,
                   ),
-                  Text("754234567"),
-                  Spacer(),
+                  const Text("754234567"),
+                  const Spacer(),
                   GestureDetector(
                     onTap: () async {
                       var res = await showDialog(
@@ -295,7 +295,7 @@ class _WalletState extends State<Wallet> {
                         builder: (context) => AlertDialog(
                           backgroundColor: Colors.white,
                           surfaceTintColor: Colors.white,
-                          content: Text("Remove bank account?"),
+                          content: const Text("Remove bank account?"),
                           actionsAlignment: MainAxisAlignment.spaceEvenly,
                           actions: [
                             MaterialButton(

@@ -1,0 +1,65 @@
+profile:
+ - id
+ - account type
+ - address
+ - full name
+ - email
+ - phone number
+ - date joined
+ - profile picture
+ - verified
+
+kyc:
+ - user (uid)
+ - id type
+ - id picture front
+ - id picture back
+ - date created
+ - verified
+
+delivery job:
+ - pick-up address
+ - delivery address
+ - pickup time
+ - sender uid
+ - recievers name
+ - status
+ - amount
+ - courier uid
+ - remark
+
+
+payment:
+ - delivery (id)
+ - amount
+ - courier (uid)
+ - sender (uid)
+ - time 
+ - status
+ - payment referance
+ - description
+
+wallet:
+ - owner (uid)
+ - account number
+ - account name
+ - bank name
+ - status
+
+
+wallet history:
+ - debit amount
+ - credit amount
+ - time
+ - description
+
+
+withdrawal requests:
+ - amount
+ - time 
+ - wallet
+ - account number
+ - account name
+ - bank name
+ - status
+ - rejection note
