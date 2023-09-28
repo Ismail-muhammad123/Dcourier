@@ -1,8 +1,14 @@
+import 'dart:typed_data';
+
 import 'package:app/constants.dart';
+import 'package:app/data/profile_data.dart';
 import 'package:app/pages/sme/activities/activities.dart';
 import 'package:app/pages/sme/profile/edit_profile.dart';
 import 'package:app/pages/sme/support/support.dart';
 import 'package:app/widgets/buttons.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import './tracking/tracking.dart';
 import '../wallet/wallet_home.dart';
@@ -16,6 +22,36 @@ class Menu extends StatefulWidget {
 }
 
 class MenuState extends State<Menu> {
+  Profile? myProfile;
+
+  Uint8List? profileImage;
+
+  _getProfile() async {
+    var uid = FirebaseAuth.instance.currentUser!.uid;
+    Uint8List? img;
+    var user =
+        await FirebaseFirestore.instance.collection("profiles").doc(uid).get();
+    var profile = Profile.fromMap(user.data()!);
+    if (profile.profilePicture != null && profile.profilePicture!.isNotEmpty) {
+      img = await FirebaseStorage.instance
+          .ref()
+          .child(profile.profilePicture!)
+          .getData();
+    }
+    if (mounted) {
+      setState(() {
+        profileImage = img;
+        myProfile = profile;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    _getProfile();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,24 +84,31 @@ class MenuState extends State<Menu> {
                   height: 150,
                   width: 150,
                   decoration: BoxDecoration(
+                    image: profileImage == null
+                        ? null
+                        : DecorationImage(
+                            image: MemoryImage(profileImage!),
+                          ),
                     color: tartiaryColor,
-                    borderRadius: BorderRadius.circular(40),
+                    borderRadius: BorderRadius.circular(75),
                   ),
                   alignment: Alignment.bottomCenter,
-                  child: const Icon(
-                    Icons.person,
-                    size: 150,
-                  ),
+                  child: profileImage == null
+                      ? const Icon(
+                          Icons.person,
+                          size: 150,
+                        )
+                      : null,
                 ),
                 Text(
-                  "Musab",
+                  myProfile != null ? myProfile!.fullName! : "",
                   style: TextStyle(
                     color: primaryColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 18.0,
                   ),
                 ),
-                const Text("testmail@mail.mail"),
+                Text(FirebaseAuth.instance.currentUser!.email ?? ""),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: SizedBox(
@@ -180,6 +223,9 @@ class MenuState extends State<Menu> {
                         ],
                       ),
                     );
+                    if (res == 1) {
+                      await FirebaseAuth.instance.signOut();
+                    }
                   },
                 ),
                 Divider(),

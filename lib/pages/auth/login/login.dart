@@ -14,33 +14,36 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool _showPassword = false;
+  bool failed = false;
   bool _loading = false;
-  var _auth = FirebaseAuth.instance;
+  String _errorMessage = "";
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  _loginCOURIER() async {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const CourierHome(),
-      ),
-    );
+  _login() async {
+    setState(() => _loading = true);
+    try {
+      var u = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+    } on FirebaseAuthException catch (e) {
+      print(e.message);
+      print(e.code);
+      setState(() => _errorMessage = e.message!);
+    }
+    setState(() => _loading = false);
   }
 
-  _loginSME() async {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const SMEHomePage(),
-      ),
-    );
-  }
-
-  _registerWithPhoneNumber() async {
-    await _auth.verifyPhoneNumber(
-      verificationCompleted: (phoneAuthCredential) {},
-      verificationFailed: (error) {},
-      codeSent: (verificationId, forceResendingToken) {},
-      codeAutoRetrievalTimeout: (verificationId) {},
-    );
-  }
+  // _registerWithPhoneNumber() async {
+  //   await _auth.verifyPhoneNumber(
+  //     verificationCompleted: (phoneAuthCredential) {},
+  //     verificationFailed: (error) {},
+  //     codeSent: (verificationId, forceResendingToken) {},
+  //     codeAutoRetrievalTimeout: (verificationId) {},
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -72,8 +75,9 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                     ),
                     TextFormField(
+                      controller: _emailController,
                       decoration: const InputDecoration(
-                        label: Text("Email / Phone Number"),
+                        label: Text("Email"),
                         prefixIcon: Icon(
                           Icons.person,
                           size: 30,
@@ -81,6 +85,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     TextFormField(
+                      controller: _passwordController,
                       obscureText: !_showPassword,
                       decoration: InputDecoration(
                         label: const Text("Password"),
@@ -98,6 +103,11 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ),
+                    ),
+                    Text(
+                      _errorMessage,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.red),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -125,31 +135,14 @@ class _LoginPageState extends State<LoginPage> {
                               color: primaryColor,
                             )
                           : MaterialButton(
-                              onPressed: _loginSME,
+                              onPressed: _login,
                               minWidth: double.maxFinite,
                               height: 50,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               color: accentColor,
-                              child: const Text("Login SME"),
-                            ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: _loading
-                          ? CircularProgressIndicator(
-                              color: primaryColor,
-                            )
-                          : MaterialButton(
-                              onPressed: _loginCOURIER,
-                              minWidth: double.maxFinite,
-                              height: 50,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              color: accentColor,
-                              child: const Text("Login COURIER"),
+                              child: const Text("Login"),
                             ),
                     ),
                     Padding(

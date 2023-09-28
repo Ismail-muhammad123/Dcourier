@@ -7,7 +7,8 @@ class CourierRegistrationPage extends StatefulWidget {
   const CourierRegistrationPage({super.key});
 
   @override
-  State<CourierRegistrationPage> createState() => CourierRegistrationPageState();
+  State<CourierRegistrationPage> createState() =>
+      CourierRegistrationPageState();
 }
 
 class CourierRegistrationPageState extends State<CourierRegistrationPage> {
@@ -40,11 +41,11 @@ class CourierRegistrationPageState extends State<CourierRegistrationPage> {
     );
 
     setState(() => loading = false);
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const VerificationPage(),
-      ),
-    );
+    // Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //     builder: (context) => const VerificationPage(),
+    //   ),
+    // );
   }
 
   @override

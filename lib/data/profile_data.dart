@@ -7,11 +7,13 @@ class Profile {
   String? email;
   String? phoneNumber;
   String? profilePicture;
+  String? accountType;
   Timestamp? dateJoined;
   bool verified;
 
   Profile({
     this.id,
+    this.accountType,
     this.address,
     this.fullName,
     this.email,
@@ -24,6 +26,7 @@ class Profile {
   factory Profile.fromMap(Map<String, dynamic> data) {
     return Profile(
       address: data["address"],
+      accountType: data["account_type"],
       fullName: data["full_name"],
       email: data["email"],
       phoneNumber: data["phone_number"],
@@ -35,6 +38,7 @@ class Profile {
 
   Map<String, dynamic> toMap() {
     return {
+      "account_type": accountType,
       "address": address,
       "full_name": fullName,
       "email": email,
