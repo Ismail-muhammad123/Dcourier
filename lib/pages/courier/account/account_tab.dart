@@ -1,10 +1,15 @@
+import 'dart:typed_data';
+
 import 'package:app/constants.dart';
+import 'package:app/data/profile_data.dart';
 import 'package:app/pages/base.dart';
 import 'package:app/pages/courier/perfomance/performance.dart';
 import 'package:app/pages/courier/profile/edit_profile.dart';
 import 'package:app/pages/sme/support/support.dart';
 import 'package:app/pages/wallet/wallet_home.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 class AccountTab extends StatefulWidget {
@@ -15,6 +20,36 @@ class AccountTab extends StatefulWidget {
 }
 
 class AccountTabState extends State<AccountTab> {
+  Uint8List? _profilePic;
+  String name = "";
+  String phoneNumber = "";
+
+  _getProfile() async {
+    var uid = FirebaseAuth.instance.currentUser!.uid;
+    var profile =
+        await FirebaseFirestore.instance.collection("profiles").doc(uid).get();
+    if (profile.exists) {
+      var p = Profile.fromMap(profile.data()!);
+      var profilePic = await FirebaseStorage.instance
+          .ref()
+          .child(p.profilePicture!)
+          .getData();
+      if (mounted) {
+        setState(() {
+          _profilePic = profilePic;
+          name = p.fullName!;
+          phoneNumber = p.phoneNumber!;
+        });
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    _getProfile();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,29 +77,36 @@ class AccountTabState extends State<AccountTab> {
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.white, width: 3),
                         borderRadius: BorderRadius.circular(30),
+                        image: _profilePic == null
+                            ? null
+                            : DecorationImage(
+                                image: MemoryImage(_profilePic!),
+                              ),
                       ),
-                      child: const Icon(
-                        Icons.person,
-                        size: 50,
-                        color: Colors.white,
-                      ),
+                      child: _profilePic == null
+                          ? const Icon(
+                              Icons.person,
+                              size: 50,
+                              color: Colors.white,
+                            )
+                          : null,
                     ),
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "Hi, Ahmad abdullahi",
-                            style: TextStyle(
+                            "Hi, $name",
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           Text(
-                            "098765345678",
-                            style: TextStyle(
+                            phoneNumber,
+                            style: const TextStyle(
                               color: Colors.white,
                             ),
                           ),
