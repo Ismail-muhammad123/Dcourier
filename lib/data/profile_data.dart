@@ -9,7 +9,9 @@ class Profile {
   String? profilePicture;
   String? accountType;
   Timestamp? dateJoined;
+  bool available;
   bool verified;
+  String? vehicleType;
 
   Profile({
     this.id,
@@ -20,7 +22,9 @@ class Profile {
     this.phoneNumber,
     this.profilePicture,
     this.dateJoined,
+    this.vehicleType,
     this.verified = false,
+    this.available = false,
   });
 
   factory Profile.fromMap(Map<String, dynamic> data) {
@@ -31,8 +35,10 @@ class Profile {
       email: data["email"],
       phoneNumber: data["phone_number"],
       profilePicture: data["profile_picture"],
+      vehicleType: data["vehicle_type"],
       dateJoined: data["date_joined"],
       verified: data["verified"],
+      available: data["available"] ?? false,
     );
   }
 
@@ -44,8 +50,10 @@ class Profile {
       "email": email,
       "phone_number": phoneNumber,
       "profile_picture": profilePicture,
+      "vehicle_type": vehicleType,
       "date_joined": dateJoined,
       "verified": verified,
+      "available": available,
     };
   }
 }

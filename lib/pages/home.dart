@@ -86,7 +86,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    _getAccountType().then((value) {});
+    _getAccountType();
     super.initState();
   }
 

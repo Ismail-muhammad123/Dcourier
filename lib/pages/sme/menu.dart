@@ -225,6 +225,8 @@ class MenuState extends State<Menu> {
                     );
                     if (res == 1) {
                       await FirebaseAuth.instance.signOut();
+                      Navigator.of(context)
+                          .popUntil((route) => route.isFirst == true);
                     }
                   },
                 ),

@@ -5,6 +5,14 @@ class KYC {
   String? idType;
   String? idPictureFront;
   String? idPictureBack;
+
+  String? bvn;
+  String? accountName;
+  String? accountNumber;
+  String? bankName;
+
+  String? vehiclePlateNumber;
+
   Timestamp? dateFiled;
   bool? verified;
 
@@ -15,6 +23,11 @@ class KYC {
     this.idPictureBack,
     this.dateFiled,
     this.verified,
+    this.bvn,
+    this.accountName,
+    this.accountNumber,
+    this.bankName,
+    this.vehiclePlateNumber,
   });
 
   factory KYC.fromMap(Map<String, dynamic> data) {
@@ -24,6 +37,11 @@ class KYC {
       idPictureBack: data['id_picture_back'],
       dateFiled: data['date_filed'],
       verified: data['verified'],
+      bvn: data['bvn'],
+      accountName: data['account_name'],
+      accountNumber: data['account_number'],
+      bankName: data['bank_name'],
+      vehiclePlateNumber: data['vehicle_plate_number'],
     );
   }
 
@@ -34,6 +52,11 @@ class KYC {
       "id_picture_back": idPictureBack,
       "date_filed": dateFiled,
       "verified": verified,
+      "bvn": bvn,
+      "account_name": accountName,
+      "account_number": accountNumber,
+      "bank_name": bankName,
+      "vehicle_plate_number": vehiclePlateNumber,
     };
   }
 }

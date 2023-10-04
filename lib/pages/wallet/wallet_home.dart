@@ -2,6 +2,8 @@ import 'package:app/constants.dart';
 import 'package:app/pages/wallet/add_money.dart';
 import 'package:app/pages/wallet/withdraw.dart';
 import 'package:app/widgets/buttons.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Wallet extends StatefulWidget {
@@ -12,6 +14,10 @@ class Wallet extends StatefulWidget {
 }
 
 class _WalletState extends State<Wallet> {
+  var uid = FirebaseAuth.instance.currentUser!.uid;
+  // _getWallet() async {
+  //   return await ;
+  // }
   bool _balanceVisible = true;
   _addBank() async {
     await showDialog(
@@ -21,83 +27,100 @@ class _WalletState extends State<Wallet> {
         surfaceTintColor: Colors.white,
         child: SizedBox(
           height: 400,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                TextFormField(
-                  decoration: InputDecoration(
-                    label: const Text("Bank Name"),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide(color: accentColor),
-                    ),
-                    fillColor: tartiaryColor,
-                    focusColor: accentColor,
-                  ),
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    label: const Text("Account Number"),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide(color: accentColor),
-                    ),
-                    fillColor: tartiaryColor,
-                    focusColor: accentColor,
-                  ),
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    label: const Text("Account Name"),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide(color: accentColor),
-                    ),
-                    fillColor: tartiaryColor,
-                    focusColor: accentColor,
-                  ),
-                ),
-                MaterialButton(
-                  onPressed: () async {
-                    await showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        surfaceTintColor: Colors.white,
-                        backgroundColor: Colors.white,
-                        title: const Text("Congratulations"),
-                        content: const Text(
-                            "Your bank account has been successfully addedto your wallet"),
-                        actions: [
-                          MaterialButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            color: accentColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              "Okay",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
+          child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              future: FirebaseFirestore.instance
+                  .collection("wallets")
+                  .doc(uid)
+                  .get(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: Text("Wallet not found"),
+                  );
+                }
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      TextFormField(
+                        decoration: InputDecoration(
+                          label: const Text("Bank Name"),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(color: accentColor),
                           ),
-                        ],
+                          fillColor: tartiaryColor,
+                          focusColor: accentColor,
+                        ),
                       ),
-                    );
-                    Navigator.of(context).pop();
-                  },
-                  child: const GradientDecoratedContainer(
-                    child: Text(
-                      "Add bank Account",
-                      style: TextStyle(color: Colors.white),
-                    ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          label: const Text("Account Number"),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(color: accentColor),
+                          ),
+                          fillColor: tartiaryColor,
+                          focusColor: accentColor,
+                        ),
+                      ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          label: const Text("Account Name"),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(color: accentColor),
+                          ),
+                          fillColor: tartiaryColor,
+                          focusColor: accentColor,
+                        ),
+                      ),
+                      MaterialButton(
+                        onPressed: () async {
+                          await showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              surfaceTintColor: Colors.white,
+                              backgroundColor: Colors.white,
+                              title: const Text("Congratulations"),
+                              content: const Text(
+                                  "Your bank account has been successfully addedto your wallet"),
+                              actions: [
+                                MaterialButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  color: accentColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Text(
+                                    "Okay",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                          Navigator.of(context).pop();
+                        },
+                        child: const GradientDecoratedContainer(
+                          child: Text(
+                            "Add bank Account",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      )
+                    ],
                   ),
-                )
-              ],
-            ),
-          ),
+                );
+              }),
         ),
       ),
     );
@@ -138,7 +161,7 @@ class _WalletState extends State<Wallet> {
                   children: [
                     Row(
                       children: [
-                        Text(
+                        const Text(
                           "Available Balance:",
                           style: TextStyle(
                             color: Colors.white70,
@@ -192,12 +215,12 @@ class _WalletState extends State<Wallet> {
                                   color: tartiaryColor,
                                 ),
                                 alignment: Alignment.center,
-                                child: Icon(
+                                child: const Icon(
                                   Icons.money,
                                   color: Colors.white,
                                 ),
                               ),
-                              Text(
+                              const Text(
                                 "Add Money",
                                 style: TextStyle(
                                   color: Colors.white,

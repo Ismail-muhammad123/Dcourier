@@ -142,7 +142,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
                   color: primaryColor,
                 )
               : const Text(
-                  "Send",
+                  "Save",
                   style: TextStyle(
                     color: Colors.white,
                   ),
@@ -162,9 +162,11 @@ class _EditProfileFormState extends State<EditProfileForm> {
                       height: 150,
                       width: 150,
                       decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: MemoryImage(image!),
-                        ),
+                        image: image != null
+                            ? DecorationImage(
+                                image: MemoryImage(image!),
+                              )
+                            : null,
                         color: tartiaryColor,
                         borderRadius: BorderRadius.circular(75),
                       ),

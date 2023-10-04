@@ -17,3 +17,8 @@ from firebase_admin import initialize_app
 # functions
 
 # 
+
+@https_fn.on_request()
+def get_wallet_balance(req: https_fn.Request) -> https_fn.Response:
+    uid = req.authorization
+    pass

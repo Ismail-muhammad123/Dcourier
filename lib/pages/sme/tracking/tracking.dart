@@ -1,5 +1,10 @@
+import 'package:app/data/delivery_data.dart';
+import 'package:app/pages/sme/available_couriers.dart';
 import 'package:app/pages/sme/tracking/tracking_details.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class TrackingPage extends StatefulWidget {
   const TrackingPage({super.key});
@@ -10,6 +15,7 @@ class TrackingPage extends StatefulWidget {
 
 class _TrackingPageState extends State<TrackingPage> {
   bool _isEmpty = false;
+  var uid = FirebaseAuth.instance.currentUser!.uid;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,45 +48,72 @@ class _TrackingPageState extends State<TrackingPage> {
                   )
                 ],
               )
-            : ListView(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Card(
-                      surfaceTintColor: Colors.white,
-                      color: Colors.white,
-                      child: ListTile(
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const TrackingDetail(),
-                          ),
-                        ),
-                        trailing: Container(
-                          height: 20,
-                          width: 20,
-                          decoration: BoxDecoration(
-                            color: Colors.orange,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        title: Text("Job #0008669"),
-                        subtitle: Wrap(
-                          spacing: 12.0,
-                          children: [
-                            Text(
-                              "john doe",
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                            Text(
-                              "12-09-2023 12:04pm",
-                              style: TextStyle(color: Colors.grey),
-                            )
-                          ],
-                        ),
-                      ),
+            : FutureBuilder(
+                future: FirebaseFirestore.instance
+                    .collection("jobs")
+                    .where("sender_id", isEqualTo: uid)
+                    .get(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(
+                      child: Text("You have not initiated any delivery yet"),
+                    );
+                  }
+                  var data = snapshot.data!.docs.map(
+                    (e) => Delivery.fromMap(
+                      e.data(),
                     ),
-                  )
-                ],
+                  );
+                  return ListView(
+                    children: data
+                        .map(
+                          (e) => Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Card(
+                              surfaceTintColor: Colors.white,
+                              color: Colors.white,
+                              child: ListTile(
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => TrackingDetail(
+                                      delivery: e,
+                                    ),
+                                  ),
+                                ),
+                                trailing: Container(
+                                  height: 20,
+                                  width: 20,
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                title: Text(
+                                    "Delivery to ${e.recieverName ?? '-'}"),
+                                subtitle: Wrap(
+                                  spacing: 12.0,
+                                  children: [
+                                    Text(
+                                      DateFormat.yMMMEd()
+                                          .format(e.pickupTime!.toDate()),
+                                      style:
+                                          const TextStyle(color: Colors.grey),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  );
+                },
               ),
       ),
     );
