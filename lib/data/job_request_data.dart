@@ -1,28 +1,33 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class JobRequest {
+  String? id;
   late String jobID;
   late String creatorID;
-  late String applocantID;
-  late Timestamp appliedAt;
-  bool accepted;
+  late String courierId;
+  late Timestamp? appliedAt;
+  String? status;
   Timestamp? acceptedAt;
+  bool accepted;
 
   JobRequest({
     required this.jobID,
     required this.creatorID,
-    required this.applocantID,
+    required this.courierId,
     required this.appliedAt,
+    required this.status,
     this.accepted = false,
     this.acceptedAt,
+    this.id,
   });
 
   factory JobRequest.fromMap(Map<String, dynamic> data) {
     return JobRequest(
       jobID: data['job_id'],
       creatorID: data['creator_id'],
-      applocantID: data['applicant_id'],
+      courierId: data['courier_id'],
       appliedAt: data['applied_at'],
+      status: data['status'],
       accepted: data['accepted'] ?? false,
       acceptedAt: data['accepted_at'],
     );
@@ -32,8 +37,8 @@ class JobRequest {
     return {
       "job_id": jobID,
       "creator_id": creatorID,
-      "applicant_id": applocantID,
-      "applied_at": appliedAt,
+      "courier_id": courierId,
+      "status": status,
       "accepted": accepted,
       "accepted_at": acceptedAt,
     };

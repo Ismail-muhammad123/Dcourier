@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Delivery {
+  String? id;
   String? itemType;
   String? vehicleType;
   String? pickupAddress;
@@ -12,7 +13,7 @@ class Delivery {
   List? deliveryCoodinate;
   String? remark;
   num? amount;
-  int? status;
+  String? status;
   String? senderId;
   String? courierId;
 
@@ -22,6 +23,7 @@ class Delivery {
   String? deliveredImage;
 
   Delivery({
+    this.id,
     this.itemType,
     this.vehicleType,
     this.pickupAddress,

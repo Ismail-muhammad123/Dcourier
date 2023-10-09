@@ -37,7 +37,7 @@ class Profile {
       profilePicture: data["profile_picture"],
       vehicleType: data["vehicle_type"],
       dateJoined: data["date_joined"],
-      verified: data["verified"],
+      verified: data["verified"] ?? false,
       available: data["available"] ?? false,
     );
   }

@@ -63,3 +63,11 @@ withdrawal requests:
  - bank name
  - status
  - rejection note
+
+
+
+delivery statuses
+ - pending
+ - enroute
+ - delivered
+ - canceled

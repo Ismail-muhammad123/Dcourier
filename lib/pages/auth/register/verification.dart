@@ -1,6 +1,5 @@
 import 'package:app/constants.dart';
 import 'package:app/pages/auth/login/login.dart';
-import 'package:app/pages/auth/register/success.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -18,7 +17,7 @@ class VerificationPage extends StatefulWidget {
 }
 
 class _VerificationPageState extends State<VerificationPage> {
-  final TextEditingController _optController = TextEditingController();
+  final TextEditingController _otpController = TextEditingController();
 
   String errorText = "";
   var auth = FirebaseAuth.instance;

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:app/constants.dart';
 import 'package:app/data/profile_data.dart';
+import 'package:app/pages/base.dart';
 import 'package:app/pages/sme/activities/activities.dart';
 import 'package:app/pages/sme/profile/edit_profile.dart';
 import 'package:app/pages/sme/support/support.dart';
@@ -225,8 +226,11 @@ class MenuState extends State<Menu> {
                     );
                     if (res == 1) {
                       await FirebaseAuth.instance.signOut();
-                      Navigator.of(context)
-                          .popUntil((route) => route.isFirst == true);
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => const BasePage(),
+                        ),
+                      );
                     }
                   },
                 ),

@@ -45,11 +45,17 @@ class _EditProfileFormState extends State<EditProfileForm> {
           .ref()
           .child(profile.profilePicture!)
           .getData()
-          .then((value) => setState(() => image = value));
+          .then((value) {
+        if (mounted) {
+          setState(() => image = value);
+        }
+      });
     }
-    setState(() {
-      myProfile = profile;
-    });
+    if (mounted) {
+      setState(() {
+        myProfile = profile;
+      });
+    }
   }
 
   Future<Uint8List?> _pickImage() async {
@@ -230,7 +236,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
                     bottom: 0,
                     right: 0,
                     child: GestureDetector(
-                      onTap: getImage,
+                      onTap: _uploading ? null : getImage,
                       child: Container(
                         height: 40,
                         width: 40,
@@ -239,9 +245,9 @@ class _EditProfileFormState extends State<EditProfileForm> {
                           color: accentColor,
                         ),
                         alignment: Alignment.center,
-                        child: const Icon(
+                        child: Icon(
                           Icons.edit,
-                          color: Colors.white,
+                          color: _uploading ? Colors.grey : Colors.white,
                         ),
                       ),
                     ),

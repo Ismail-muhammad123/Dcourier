@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'my_order.dart';
-import 'order_request.dart';
+import 'history.dart';
+import 'delivery_request.dart';
 
 class OrdersTab extends StatefulWidget {
   const OrdersTab({super.key});
@@ -23,18 +23,18 @@ class _OrdersTabState extends State<OrdersTab> {
                 text: "Requests",
               ),
               Tab(
-                text: "My Orders",
+                text: "History",
               ),
             ],
           ),
         ),
-        body: TabBarView(
+        body: const TabBarView(
           children: [
             Center(
               child: OrderRequest(),
             ),
             Center(
-              child: MyOrders(),
+              child: DeliveryHistory(),
             ),
           ],
         ),

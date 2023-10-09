@@ -1,8 +1,8 @@
 import 'package:app/constants.dart';
 import 'package:app/data/delivery_data.dart';
+import 'package:app/data/job_request_data.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:geolocator/geolocator.dart';
 import '../menu.dart';
 import 'package:flutter/material.dart';
 import '../../../widgets/buttons.dart';
@@ -72,11 +72,26 @@ class _SMEHomePageState extends State<SMEHomePage> {
       recieverPhoneNumber: _recieverPhoneNumberController.text.trim(),
       deliveryAddress: _deliveryAddressController.text.trim(),
       senderId: uid,
-      status: 1,
+      status: "pending",
       amount: amount,
     );
 
-    var j = await firestoreInctance.collection("jobs").add(job.toMap());
+    var batch = firestoreInctance.batch();
+
+    // await firestoreInctance.collection("jobs").add();
+    var j = firestoreInctance.collection("jobs").doc();
+    batch.set(j, job.toMap());
+
+    // var req = JobRequest(
+    //   jobID: "jobID",
+    //   creatorID: FirebaseAuth.instance.currentUser!.uid,
+    //   appliedAt: Timestamp.now(),
+    //   status: "requested",
+    // );
+    // var r = firestoreInctance.collection("r").doc();
+    // batch.set(r, job.toMap());
+
+    await batch.commit();
 
     // show snack bar message
     ScaffoldMessenger.of(context).showSnackBar(
@@ -141,7 +156,7 @@ class _SMEHomePageState extends State<SMEHomePage> {
           IconButton(
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => NotificationsPage(),
+                builder: (context) => const NotificationsPage(),
               ),
             ),
             icon: const Icon(Icons.notifications),

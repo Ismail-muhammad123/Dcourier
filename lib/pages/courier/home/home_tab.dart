@@ -1,4 +1,7 @@
 import 'package:app/constants.dart';
+import 'package:app/data/profile_data.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -10,22 +13,21 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-  // // final Completer<GoogleMapController> _controller =
-  // //     Completer<GoogleMapController>();
-  // static const CameraPosition _kGooglePlex = CameraPosition(
-  //   target: LatLng(37.42796133580664, -122.085749655962),
-  //   zoom: 14.4746,
-  // );
-  // _complete(GoogleMapController controller){
-  //   _controller.complete(controller);
-  // }
   late GoogleMapController mapController;
   final LatLng _center = const LatLng(12.000000, 8.516667);
-  bool _isAvailable = false; // TODO set value dynamically
 
   void _onMapCreated(GoogleMapController controller) {
     setState(() => mapController = controller);
     // mapController.complete();
+  }
+
+  _updateAvailability(bool val) async {
+    var uid = FirebaseAuth.instance.currentUser!.uid;
+    await FirebaseFirestore.instance
+        .collection("profiles")
+        .doc(uid)
+        .update({'available': val});
+    setState(() {});
   }
 
   @override
@@ -102,14 +104,26 @@ class _HomeTabState extends State<HomeTab> {
                     fontSize: 18.0,
                   ),
                 ),
-                Switch(
-                  activeColor: primaryColor,
-                  inactiveThumbColor: accentColor,
-                  activeTrackColor: accentColor,
-                  inactiveTrackColor: tartiaryColor,
-                  value: _isAvailable,
-                  onChanged: (val) => setState(() => _isAvailable = val),
-                ),
+                StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                    stream: FirebaseFirestore.instance
+                        .collection("profiles")
+                        .doc(FirebaseAuth.instance.currentUser!.uid)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData ||
+                          !snapshot.data!.exists ||
+                          snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      }
+                      return Switch(
+                        activeColor: primaryColor,
+                        inactiveThumbColor: accentColor,
+                        activeTrackColor: accentColor,
+                        inactiveTrackColor: tartiaryColor,
+                        value: snapshot.data!.data()!['available'],
+                        onChanged: _updateAvailability,
+                      );
+                    }),
               ],
             ),
           ),

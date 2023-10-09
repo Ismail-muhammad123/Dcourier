@@ -1,14 +1,37 @@
 import 'package:app/constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class PaymentSuccess extends StatefulWidget {
-  const PaymentSuccess({super.key});
+  final String recieverName, recieverPhone;
+  final double amount;
+  const PaymentSuccess({
+    super.key,
+    required this.recieverName,
+    required this.recieverPhone,
+    required this.amount,
+  });
 
   @override
   State<PaymentSuccess> createState() => _PaymentSuccessState();
 }
 
 class _PaymentSuccessState extends State<PaymentSuccess> {
+  String _senderName = "";
+  @override
+  void initState() {
+    FirebaseFirestore.instance
+        .collection('profiles')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then(
+          (value) => setState(() => _senderName = value.data()!['full_name']),
+        );
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,20 +136,20 @@ class _PaymentSuccessState extends State<PaymentSuccess> {
                   ),
                   padding: const EdgeInsets.all(12.0),
                   alignment: Alignment.center,
-                  child: const Column(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
+                          const Text(
                             "Date:",
                             style: TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.w300),
                           ),
                           Text(
-                            "12th August, 2023",
-                            style: TextStyle(
+                            DateFormat.yMMMMd().add_Hm().format(DateTime.now()),
+                            style: const TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.w500),
                           ),
                         ],
@@ -140,7 +163,7 @@ class _PaymentSuccessState extends State<PaymentSuccess> {
                                 fontSize: 20, fontWeight: FontWeight.w300),
                           ),
                           Text(
-                            "N800",
+                            widget.amount.toString(),
                             style: TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.w500),
                           ),
@@ -155,7 +178,7 @@ class _PaymentSuccessState extends State<PaymentSuccess> {
                                 fontSize: 20, fontWeight: FontWeight.w300),
                           ),
                           Text(
-                            "John Doe",
+                            _senderName,
                             style: TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.w500),
                           ),
@@ -176,14 +199,14 @@ class _PaymentSuccessState extends State<PaymentSuccess> {
                 child: Card(
                   color: accentColor,
                   surfaceTintColor: accentColor,
-                  child: const ListTile(
+                  child: ListTile(
                     leading: Icon(Icons.person, size: 30, color: Colors.white),
                     title: Text(
-                      "John Doe",
+                      widget.recieverName,
                       style: TextStyle(color: Colors.white),
                     ),
                     subtitle: Text(
-                      "987656785",
+                      widget.recieverPhone,
                       style: TextStyle(color: Colors.white),
                     ),
                   ),

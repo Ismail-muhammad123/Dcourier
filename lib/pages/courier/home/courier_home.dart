@@ -14,7 +14,7 @@ class CourierHome extends StatefulWidget {
 class _CourierHomeState extends State<CourierHome> {
   int _selectedIndex = 0;
 
-  List<Widget> _navPages = [
+  final List<Widget> _navPages = const [
     HomeTab(),
     OrdersTab(),
     AccountTab(),
@@ -26,7 +26,7 @@ class _CourierHomeState extends State<CourierHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Drawer(
-        backgroundColor: Colors.white.withOpacity(0.9),
+        backgroundColor: Color(0xFFFFFF).withOpacity(0.8),
         child: SafeArea(
           child: Column(
             children: [

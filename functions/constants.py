@@ -1,0 +1,5 @@
+PAYMENT_API_PUBLIC_KEY = "pk_test_9dd0f34d6b9716b84ec224d45e2f0b1b4a711fcb"
+PAYMENT_GATEAWAY_SECRET_KEY = "sk_test_f39d726883e4e52461ef58720dac7e7632b930a2"
+PAYMENT_GATEAWAY_URL = "https://api.paystack.co/transaction/initialize"
+PAYMENT_VERIFICATION_URL = "https://api.paystack.co/transaction/verify/"
+PAYMENT_CALLBACK_URL = "https://google.com"
