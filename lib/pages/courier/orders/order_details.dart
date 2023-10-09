@@ -45,7 +45,7 @@ class _OrderDetailsState extends State<OrderDetails> {
         .doc(reqID)
         .update({"status": "rejected"});
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Text("Request Rejected"),
       ),
     );
@@ -372,25 +372,29 @@ class _OrderDetailsState extends State<OrderDetails> {
                       ),
                       const Spacer(),
                       MaterialButton(
-                        onPressed: widget.delivery.recieverPhoneNumber !=
-                                    null &&
-                                widget.delivery.recieverPhoneNumber!.isNotEmpty
-                            ? () async {
-                                final Uri smsLaunchUri = Uri(
-                                  scheme: 'tel',
-                                  path:
-                                      "+234${widget.delivery.recieverPhoneNumber!.startsWith("0") ? widget.delivery.recieverPhoneNumber!.substring(1) : widget.delivery.recieverPhoneNumber!}",
-                                );
-                                if (!await launchUrl(smsLaunchUri)) {
-                                  throw Exception(
-                                      'Could not launch phone number');
-                                }
-                              }
-                            : null,
+                        onPressed:
+                            widget.delivery.recieverPhoneNumber != null &&
+                                    widget.delivery.recieverPhoneNumber!
+                                        .isNotEmpty &&
+                                    widget.request.status != "accepted"
+                                ? () async {
+                                    final Uri smsLaunchUri = Uri(
+                                      scheme: 'tel',
+                                      path:
+                                          "+234${widget.delivery.recieverPhoneNumber!.startsWith("0") ? widget.delivery.recieverPhoneNumber!.substring(1) : widget.delivery.recieverPhoneNumber!}",
+                                    );
+                                    if (!await launchUrl(smsLaunchUri)) {
+                                      throw Exception(
+                                          'Could not launch phone number');
+                                    }
+                                  }
+                                : null,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        color: tartiaryColor,
+                        color: widget.request.status == "accepted"
+                            ? tartiaryColor
+                            : Colors.grey,
                         child: const Row(
                           children: [
                             Icon(Icons.call),
@@ -401,10 +405,13 @@ class _OrderDetailsState extends State<OrderDetails> {
                           ],
                         ),
                       ),
+                      const SizedBox(width: 10.0),
                       MaterialButton(
                         onPressed: widget.delivery.recieverPhoneNumber !=
                                     null &&
-                                widget.delivery.recieverPhoneNumber!.isNotEmpty
+                                widget
+                                    .delivery.recieverPhoneNumber!.isNotEmpty &&
+                                widget.request.status != "accepted"
                             ? () async {
                                 final Uri smsLaunchUri = Uri(
                                   scheme: 'sms',
@@ -419,7 +426,9 @@ class _OrderDetailsState extends State<OrderDetails> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        color: tartiaryColor,
+                        color: widget.request.status == "accepted"
+                            ? tartiaryColor
+                            : Colors.grey,
                         child: const Icon(FontAwesomeIcons.message),
                       ),
                     ],

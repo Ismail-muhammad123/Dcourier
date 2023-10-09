@@ -26,7 +26,7 @@ class _CourierHomeState extends State<CourierHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Drawer(
-        backgroundColor: Color(0xFFFFFF).withOpacity(0.8),
+        backgroundColor: const Color(0x00ffffff).withOpacity(0.8),
         child: SafeArea(
           child: Column(
             children: [

@@ -54,7 +54,9 @@ class _DeliveryRequestTileState extends State<DeliveryRequestTile> {
         .doc(widget.request.jobID)
         .get();
     if (d.exists) {
-      setState(() => _delivery = Delivery.fromMap(d.data()!));
+      if (mounted) {
+        setState(() => _delivery = Delivery.fromMap(d.data()!));
+      }
     }
   }
 
