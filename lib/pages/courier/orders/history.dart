@@ -1,20 +1,17 @@
 import 'package:app/data/delivery_data.dart';
-import 'package:app/pages/courier/orders/order_details.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'order_list.dart';
-
 class DeliveryHistory extends StatefulWidget {
   const DeliveryHistory({super.key});
 
   @override
-  State<DeliveryHistory> createState() => Delivery_HistoryState();
+  State<DeliveryHistory> createState() => DeliveryHistoryState();
 }
 
-class Delivery_HistoryState extends State<DeliveryHistory> {
+class DeliveryHistoryState extends State<DeliveryHistory> {
   final ordersInstance = FirebaseFirestore.instance.collection("jobs").where(
         "courier_id",
         isEqualTo: FirebaseAuth.instance.currentUser!.uid,
@@ -32,9 +29,11 @@ class Delivery_HistoryState extends State<DeliveryHistory> {
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Image.asset("images/no_event.png");
         }
-        var deliveries = snapshot.data!.docs.map(
-          (e) => Delivery.fromMap(e.data()),
-        );
+        var deliveries = snapshot.data!.docs
+            .map(
+              (e) => Delivery.fromMap(e.data()),
+            )
+            .where((element) => element.status == "delivered");
         return ListView(
           children: deliveries
               .map(

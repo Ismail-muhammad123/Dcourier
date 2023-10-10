@@ -1,9 +1,10 @@
 import 'package:app/constants.dart';
-import 'package:app/data/profile_data.dart';
+import 'package:app/data/delivery_data.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -15,9 +16,38 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   late GoogleMapController mapController;
   final LatLng _center = const LatLng(12.000000, 8.516667);
+  Set<Marker> _markers = {};
+
+  _getCoodinatesFromAddress(String address) async {
+    List<Location> locations = await locationFromAddress(address);
+    var lat = locations.first.latitude;
+    var long = locations.first.longitude;
+    return LatLng(lat, long);
+  }
+
+  _getDeliveries() async {
+    var deliveries = await FirebaseFirestore.instance
+        .collection("jobs")
+        .where("courier_d", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .get();
+    Set<Marker> markers = <Marker>{};
+    for (var i in deliveries.docs) {
+      var d = Delivery.fromMap(i.data());
+      var marker = Marker(
+        markerId: MarkerId(d.recieverName ?? "-"),
+        position: await _getCoodinatesFromAddress(d.deliveryAddress!),
+      );
+      markers.add(marker);
+    }
+    setState(() {
+      _markers.addAll(markers);
+    });
+  }
 
   void _onMapCreated(GoogleMapController controller) {
-    setState(() => mapController = controller);
+    if (mounted) {
+      setState(() => mapController = controller);
+    }
     // mapController.complete();
   }
 
@@ -31,11 +61,18 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   @override
+  void initState() {
+    _getDeliveries();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         Center(
           child: GoogleMap(
+            markers: _markers,
             zoomControlsEnabled: false,
             myLocationButtonEnabled: true,
             myLocationEnabled: true,

@@ -76,11 +76,11 @@ class _SMEHomePageState extends State<SMEHomePage> {
       amount: amount,
     );
 
-    var batch = firestoreInctance.batch();
+    // var batch = firestoreInctance.batch();
 
-    // await firestoreInctance.collection("jobs").add();
-    var j = firestoreInctance.collection("jobs").doc();
-    batch.set(j, job.toMap());
+    var j = await firestoreInctance.collection("jobs").add(job.toMap());
+    // var j = firestoreInctance.collection("jobs").doc();
+    // batch.set(j, job.toMap());
 
     // var req = JobRequest(
     //   jobID: "jobID",
@@ -91,7 +91,9 @@ class _SMEHomePageState extends State<SMEHomePage> {
     // var r = firestoreInctance.collection("r").doc();
     // batch.set(r, job.toMap());
 
-    await batch.commit();
+    // await batch.commit();
+
+    job.id = j.id;
 
     // show snack bar message
     ScaffoldMessenger.of(context).showSnackBar(

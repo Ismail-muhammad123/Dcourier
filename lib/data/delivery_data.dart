@@ -46,7 +46,7 @@ class Delivery {
   factory Delivery.fromMap(Map<String, dynamic> data) {
     return Delivery(
       itemType: data['item_type'],
-      vehicleType: data['vehicle_tyle'],
+      vehicleType: data['vehicle_type'],
       pickupAddress: data['pickup_address'],
       pickupCoodinate: data['pickup_coodinate'],
       pickupTime: data['pickup_time'],
@@ -69,7 +69,7 @@ class Delivery {
   Map<String, dynamic> toMap() {
     return {
       'item_type': itemType,
-      'vehicle_tyle': vehicleType,
+      'vehicle_type': vehicleType,
       'pickup_address': pickupAddress,
       'pickup_coodinate': pickupCoodinate,
       'pickup_time': pickupTime,

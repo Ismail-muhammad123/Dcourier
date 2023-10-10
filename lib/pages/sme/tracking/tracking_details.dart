@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:app/constants.dart';
@@ -29,6 +30,7 @@ class _TrackingDetailState extends State<TrackingDetail> {
   bool _isRecieved = false;
   JobRequest? _courierRequest;
   Profile? _courierProfile;
+  bool _isLoading = false;
 
   var SendMoneyfunc = FirebaseFunctions.instance.httpsCallable("send_money");
   var getBalancefunc =
@@ -48,73 +50,102 @@ class _TrackingDetailState extends State<TrackingDetail> {
     return balance;
   }
 
-  _make_payment() async {
-    var walletBalance = await getBalancefunc.call();
+  _makePayment() async {
+    setState(() => _isLoading = true);
+    try {
+      var walletBalance = await getBalancefunc.call<String>();
 
-    var balance = walletBalance.data;
-    // var balance = await _getWalletBalance();
+      var balance = jsonDecode(walletBalance.data);
+      print("balance: $balance");
+      // var balance = await _getWalletBalance();
 
-    if (balance >= widget.delivery.amount!) {
-      var res = await SendMoneyfunc.call({
-        "reciever_id": _courierProfile!.id,
-        "amount": widget.delivery.id,
-      });
-
-      if (res.data == 1) {
-        await FirebaseFirestore.instance
-            .collection('jobs')
-            .doc(widget.delivery.id)
-            .update({
-          "courier_id": _courierProfile!.id,
-          "status": "paid",
+      if (balance['balance'] >= widget.delivery.amount!) {
+        var res = await SendMoneyfunc.call({
+          "reciever_id": _courierProfile!.id,
+          "amount": widget.delivery.id,
         });
 
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => PaymentSuccess(
-              amount: (widget.delivery.amount ?? 0.0) as double,
-              recieverName: widget.delivery.recieverName ?? "",
-              recieverPhone: widget.delivery.recieverPhoneNumber ?? "",
+        if (res.data == 1) {
+          await FirebaseFirestore.instance
+              .collection('jobs')
+              .doc(widget.delivery.id)
+              .update({
+            "courier_id": _courierProfile!.id,
+            "status": "paid",
+          });
+
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => PaymentSuccess(
+                amount: (widget.delivery.amount ?? 0.0) as double,
+                recieverName: widget.delivery.recieverName ?? "",
+                recieverPhone: widget.delivery.recieverPhoneNumber ?? "",
+              ),
             ),
+          );
+        }
+      } else {
+        var r = await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Insufficient Wallet balance"),
+            icon: Icon(Icons.error),
+            content: Text(
+                "You do not have enough balance in your wallet to make this payment, please credit your wallet to procees."),
+            actions: [
+              MaterialButton(
+                onPressed: () => Navigator.of(context).pop(0),
+                color: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text("Cancel"),
+              ),
+              MaterialButton(
+                onPressed: () => Navigator.of(context).pop(1),
+                color: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text("Open Wallet"),
+              )
+            ],
           ),
         );
+        setState(() => _isLoading = false);
+
+        if (r == 1) {
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const Wallet(),
+            ),
+          );
+        }
+        return;
       }
-    } else {
-      var r = await showDialog(
+    } catch (e) {
+      print("Wallet func error");
+      print(e);
+      await showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text("Insufficient Wallet balance"),
-          icon: Icon(Icons.error),
-          content: Text(
-              "You do not have enough balance in your wallet to make this payment, please credit your wallet to procees."),
+          title: const Text("Error accesing wallet"),
+          icon: const Icon(Icons.error),
+          content: const Text(
+              "We could not access your wallet account balance, please try again later"),
           actions: [
             MaterialButton(
-              onPressed: () => Navigator.of(context).pop(0),
-              color: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text("Cancel"),
-            ),
-            MaterialButton(
               onPressed: () => Navigator.of(context).pop(1),
-              color: Colors.red,
+              color: Colors.grey,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Text("Open Wallet"),
+              child: const Text("Okay"),
             )
           ],
         ),
       );
-      if (r == 1) {
-        await Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const Wallet(),
-          ),
-        );
-      }
-      return;
+      setState(() => _isLoading = false);
     }
   }
 
@@ -197,35 +228,37 @@ class _TrackingDetailState extends State<TrackingDetail> {
                 : null,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: widget.delivery.status == "paid" ||
-              widget.delivery.status == "delivered"
-          ? null
-          : _courierRequest == null || _courierRequest!.status != "accepted"
-              ? MaterialButton(
-                  onPressed: () => Navigator.of(context)
-                      .push(
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              CourierList(delivery: widget.delivery),
+      floatingActionButton: _isLoading
+          ? const CircularProgressIndicator()
+          : widget.delivery.status == "paid" ||
+                  widget.delivery.status == "delivered"
+              ? null
+              : _courierRequest == null || _courierRequest!.status != "accepted"
+                  ? MaterialButton(
+                      onPressed: () => Navigator.of(context)
+                          .push(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  CourierList(delivery: widget.delivery),
+                            ),
+                          )
+                          .then((value) => setState(() {})),
+                      child: const GradientDecoratedContainer(
+                        child: Text(
+                          "Find a Courier",
+                          style: TextStyle(color: Colors.white),
                         ),
-                      )
-                      .then((value) => setState(() {})),
-                  child: const GradientDecoratedContainer(
-                    child: Text(
-                      "Find a Courier",
-                      style: TextStyle(color: Colors.white),
+                      ),
+                    )
+                  : MaterialButton(
+                      onPressed: _makePayment,
+                      child: const GradientDecoratedContainer(
+                        child: Text(
+                          "Proceed to payment",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
                     ),
-                  ),
-                )
-              : MaterialButton(
-                  onPressed: _make_payment,
-                  child: const GradientDecoratedContainer(
-                    child: Text(
-                      "Proceed to payment",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
       body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
           future: FirebaseFirestore.instance
               .collection("jobs")

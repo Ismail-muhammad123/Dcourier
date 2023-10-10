@@ -5,6 +5,7 @@ from firebase_functions import firestore_fn, https_fn
 from firebase_admin import initialize_app, firestore
 import google.cloud.firestore
 from firebase_functions import options
+import json
 
 
 options.set_global_options(max_instances=10)
@@ -20,16 +21,20 @@ app = initialize_app()
 @https_fn.on_call()  # callable from app
 def get_wallet_balance(req: https_fn.CallableRequest) -> https_fn.Response:
     firestore_client: google.cloud.firestore.Client = firestore.client()
-    
     uid = req.auth.uid
-    # Push the new message into Cloud Firestore using the Firebase Admin SDK.
-    result = firestore_client.collection("wallet_transactions").where("owner", "==", uid).get()
+    try:
+        # Push the new message into Cloud Firestore using the Firebase Admin SDK.
+        result = firestore_client.collection("wallet_transactions").where("owner", "==", uid).get()
 
-    balance = 0
-    for v in result:
-        balance = balance + v['credit_amount'] - v['debit_amount']
+        balance = 0
+        for v in result:
+            val = v.to_dict()
+            if val is not None:
+                balance = balance + val['credit_amount'] - val['debit_amount']
 
-    return https_fn.Response(balance, 200)
+        return https_fn.Response(json.dumps({"balance": balance}), 200)
+    except:
+        return https_fn.HttpsError(message="Error")
 
 
 

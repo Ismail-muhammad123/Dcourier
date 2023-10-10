@@ -70,6 +70,40 @@ class _OrderDetailsState extends State<OrderDetails> {
     Navigator.of(context).pop();
   }
 
+  _setDeliveryPicked() async {
+    setState(() => _loading = true);
+    await FirebaseFirestore.instance
+        .collection("jobs")
+        .doc(widget.delivery.id)
+        .update({
+      "status": "enroute",
+      "pickUt_at": Timestamp.now(),
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Delivery set to Enroute"),
+      ),
+    );
+    setState(() => _loading = false);
+  }
+
+  _setDeliveryDelivered() async {
+    setState(() => _loading = true);
+    await FirebaseFirestore.instance
+        .collection("jobs")
+        .doc(widget.delivery.id)
+        .update({
+      "status": "delivered",
+      "delivered_at": Timestamp.now(),
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Delivery set to Delivered"),
+      ),
+    );
+    setState(() => _loading = false);
+  }
+
   @override
   void initState() {
     _getSenderProfile();
@@ -102,6 +136,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
                         children: [
@@ -122,6 +157,24 @@ class _OrderDetailsState extends State<OrderDetails> {
                           ),
                         ],
                       ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 4.0,
+                          horizontal: 10.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: widget.delivery.status == "delivered"
+                              ? Colors.green
+                              : tartiaryColor,
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        child: Text(
+                          widget.delivery.status ?? "",
+                          style: const TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
                     ],
                   ),
                 ),
@@ -438,42 +491,83 @@ class _OrderDetailsState extends State<OrderDetails> {
                     ? const Center(
                         child: CircularProgressIndicator(),
                       )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          MaterialButton(
-                            onPressed: _rejectRequest,
-                            color: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              side: const BorderSide(color: Colors.red),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            height: 50,
-                            minWidth: 150,
-                            child: const Text(
-                              "Reject",
-                              style: TextStyle(
-                                color: Colors.red,
-                              ),
-                            ),
-                          ),
-                          MaterialButton(
-                            onPressed: _acceptRequest,
-                            color: accentColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            height: 50,
-                            minWidth: 150,
-                            child: const Text(
-                              "Accept",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
+                    : widget.request.status == "accepted"
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              widget.delivery.status != "enroute" &&
+                                      widget.delivery.status != "delivered"
+                                  ? MaterialButton(
+                                      onPressed: _setDeliveryPicked,
+                                      color: accentColor,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      height: 50,
+                                      minWidth: 150,
+                                      child: const Text(
+                                        "set Picked",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox(),
+                              widget.delivery.status != "delivered"
+                                  ? MaterialButton(
+                                      onPressed: _setDeliveryDelivered,
+                                      color: accentColor,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      height: 50,
+                                      minWidth: 150,
+                                      child: const Text(
+                                        "Set Delivered",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox()
+                            ],
                           )
-                        ],
-                      )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              MaterialButton(
+                                onPressed: _rejectRequest,
+                                color: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  side: const BorderSide(color: Colors.red),
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                height: 50,
+                                minWidth: 150,
+                                child: const Text(
+                                  "Reject",
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                              MaterialButton(
+                                onPressed: _acceptRequest,
+                                color: accentColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                height: 50,
+                                minWidth: 150,
+                                child: const Text(
+                                  "Accept",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
               ],
             ),
           ),

@@ -30,6 +30,7 @@ dependencies:
   path_provider:
   path:
   url_launcher:
+  geocoding: ^2.1.1
 
 dev_dependencies:
   flutter_test:
