@@ -135,7 +135,7 @@ class MenuState extends State<Menu> {
                 const SizedBox(
                   height: 30,
                 ),
-                Divider(),
+                const Divider(),
                 MenuTile(
                   title: "Tracking",
                   leading: Icons.timelapse,
@@ -146,18 +146,18 @@ class MenuState extends State<Menu> {
                     ),
                   ),
                 ),
-                Divider(),
+                const Divider(),
                 MenuTile(
                   title: "Wallet",
                   leading: Icons.wallet,
                   trailing: Icons.arrow_right,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const Wallet(),
+                      builder: (context) => const WalletHome(),
                     ),
                   ),
                 ),
-                Divider(),
+                const Divider(),
                 MenuTile(
                   title: "Activities",
                   leading: Icons.history,
@@ -234,7 +234,7 @@ class MenuState extends State<Menu> {
                     }
                   },
                 ),
-                Divider(),
+                const Divider(),
               ],
             ),
           ),

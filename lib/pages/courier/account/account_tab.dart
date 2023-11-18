@@ -179,7 +179,7 @@ class AccountTabState extends State<AccountTab> {
                           GestureDetector(
                             onTap: () => Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => const Wallet(),
+                                builder: (context) => const WalletHome(),
                               ),
                             ),
                             child: Card(

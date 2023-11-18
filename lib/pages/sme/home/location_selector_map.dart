@@ -62,25 +62,56 @@ class _LocationsMapState extends State<LocationsMap> {
 
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
-    return await Geolocator.getCurrentPosition();
+    return await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
   }
 
-  _onTap() {}
+  _gotoMyLocation() async {
+    var pos = await _getMyLocation();
+    _gotoLocation(pos);
+    var marker = Marker(
+      markerId: const MarkerId("pick-up-location"),
+      position: LatLng(
+        pos.latitude,
+        pos.longitude,
+      ),
+    );
+    setState(() {
+      if (_markers != null) {
+        _markers!.clear();
+        _markers!.add(
+          marker,
+        );
+      } else {
+        _markers = {
+          marker,
+        };
+      }
+    });
+  }
 
-  _findLocation() {
-    //   var addr = _addressController.text.trim();
-    // if (addr.isNotEmpty){
-    //   await 
-    // }
+  _returnAddress() {
+    Navigator.of(context).pop(
+      {
+        "position": _markers != null && _markers!.isNotEmpty
+            ? _markers!.first.position
+            : null,
+        "address": _addressController.text,
+      },
+    );
   }
 
   _gotoLocation(Position pos) async {
-    mapController.animateCamera(CameraUpdate.newCameraPosition(
+    mapController.animateCamera(
+      CameraUpdate.newCameraPosition(
         // on below line we have given positions of Location 5
         CameraPosition(
-      target: LatLng(pos.latitude, pos.latitude),
-      zoom: 15,
-    )));
+          target: LatLng(pos.latitude, pos.longitude),
+          zoom: 20,
+        ),
+      ),
+    );
     setState(() {});
   }
 
@@ -115,39 +146,95 @@ class _LocationsMapState extends State<LocationsMap> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: tartiaryColor,
-        child: const Icon(Icons.check),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: _gotoMyLocation,
+            backgroundColor: Colors.white,
+            child: const Icon(Icons.my_location),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          FloatingActionButton(
+            onPressed: _returnAddress,
+            backgroundColor: tartiaryColor,
+            child: const Icon(Icons.check),
+          ),
+        ],
       ),
       body: Column(
         children: [
           Container(
-            height: 80,
             width: double.maxFinite,
             padding: const EdgeInsets.all(12.0),
-            child: Row(
+            child: Column(
               children: [
-                Flexible(
-                  child: TextFormField(
-                    controller: _addressController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(color: primaryColor),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: InkWell(
+                          onTap: _gotoMyLocation,
+                          child: Container(
+                            height: 50,
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              border: Border.all(),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: const Row(
+                              children: [
+                                Text("My Location"),
+                                Spacer(),
+                                Icon(Icons.my_location),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                      label: const Text("Address"),
-                      hintText: "Enter address here",
-                      hintStyle: const TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w400,
+                      IconButton(
+                        onPressed: () {
+                          if (_markers != null) {
+                            setState(() {
+                              _markers!.clear();
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.clear),
                       ),
-                    ),
-                     
+                    ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.search),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: TextFormField(
+                          controller: _addressController,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(color: primaryColor),
+                            ),
+                            label: const Text("Address"),
+                            hintText: "Enter address here",
+                            hintStyle: const TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: _returnAddress,
+                        icon: const Icon(Icons.check),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

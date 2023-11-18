@@ -1,4 +1,5 @@
 import 'package:app/constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class ActivitiesPage extends StatefulWidget {
@@ -42,7 +43,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             Flexible(
@@ -54,77 +55,53 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                     top: Radius.circular(20),
                   ),
                 ),
-                child: ListView(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              offset: Offset(4, 4),
-                              blurRadius: 12.0,
-                            )
-                          ],
-                        ),
-                        child: ListTile(
-                          title: Text(
-                            "Money added to wallet",
-                            style: TextStyle(color: accentColor),
-                          ),
-                          subtitle: Text(
-                            "28-12-2023",
-                            style: TextStyle(
-                              color: Colors.grey,
+                child: FutureBuilder(
+                  future:
+                      FirebaseFirestore.instance.collection("activities").get(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    if (!snapshot.hasData) {
+                      return const Center(child: Text("Not found"));
+                    }
+                    return ListView(
+                      children: snapshot.data!.docs
+                          .map(
+                            (e) => Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      offset: const Offset(4, 4),
+                                      blurRadius: 12.0,
+                                    )
+                                  ],
+                                ),
+                                child: ListTile(
+                                  title: Text(
+                                    e.data()['activity'],
+                                    style: TextStyle(color: accentColor),
+                                  ),
+                                  subtitle: Text(
+                                    e.data()['time'].toString(),
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                          trailing: Text(
-                            "+ N1,000",
-                            style: TextStyle(
-                              color: Colors.green,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              offset: Offset(4, 4),
-                              blurRadius: 12.0,
-                            )
-                          ],
-                        ),
-                        child: ListTile(
-                          title: Text(
-                            "Money added to wallet",
-                            style: TextStyle(color: accentColor),
-                          ),
-                          subtitle: Text(
-                            "28-12-2023",
-                            style: TextStyle(
-                              color: Colors.grey,
-                            ),
-                          ),
-                          trailing: Text(
-                            "+ N1,000",
-                            style: TextStyle(
-                              color: Colors.green,
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
+                          )
+                          .toList(),
+                    );
+                  },
                 ),
               ),
             ),

@@ -26,17 +26,25 @@ class TrackingDetail extends StatefulWidget {
 }
 
 class _TrackingDetailState extends State<TrackingDetail> {
-  bool _isPicked = false;
-  bool _isRecieved = false;
   JobRequest? _courierRequest;
   Profile? _courierProfile;
   bool _isLoading = false;
 
-  var SendMoneyfunc = FirebaseFunctions.instance.httpsCallable("send_money");
-  var getBalancefunc =
-      FirebaseFunctions.instance.httpsCallable("get_wallet_balance");
+  var sendMoneyfunc = FirebaseFunctions.instance.httpsCallable("sendMoney");
+  // var getBalancefunc =
+  //     FirebaseFunctions.instance.httpsCallable("getWalletBalance");
 
   Future<double> _getWalletBalance() async {
+    try {
+      // var walletBalance = await getBalancefunc.call<num>();
+      // var balance = walletBalance.data as double;
+      // print("balance: $balance");
+      // return balance;
+    } on FirebaseFunctionsException catch (error) {
+      print(error.code);
+      print(error.details);
+      print(error.message);
+    }
     var transactions = await FirebaseFirestore.instance
         .collection("wallet_transactions")
         .where("owner", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
@@ -44,35 +52,62 @@ class _TrackingDetailState extends State<TrackingDetail> {
     double balance = 0;
     for (var i in transactions.docs) {
       balance = balance +
-          ((i.data()['credit_amoun'] ?? 0) as double) -
-          ((i.data()['debit_amount'] ?? 0) as double);
+          (i.data()['credit_amoun'] ?? 0) -
+          (i.data()['debit_amount'] ?? 0);
     }
+    // var walletBalance = await getBalancefunc.call<num>();
+    // var balance = walletBalance.data;
+    // print("balance: $balance");
     return balance;
+  }
+
+  Future<int?> _sendPayment(String to, double amount) async {
+    try {
+      var res = await sendMoneyfunc.call<int>({
+        "to": to,
+        "amount": amount,
+      });
+      return res.data;
+    } on FirebaseFunctionsException catch (error) {
+      print(error.code);
+      print(error.message);
+      print(error.details);
+      return null;
+    }
   }
 
   _makePayment() async {
     setState(() => _isLoading = true);
     try {
-      var walletBalance = await getBalancefunc.call<String>();
+      // var walletBalance = await getBalancefunc.call<String>();
 
-      var balance = jsonDecode(walletBalance.data);
-      print("balance: $balance");
-      // var balance = await _getWalletBalance();
+      // var balance = jsonDecode(walletBalance.data);
+      // print("balance: $balance");
+      var balance = await _getWalletBalance();
 
-      if (balance['balance'] >= widget.delivery.amount!) {
-        var res = await SendMoneyfunc.call({
-          "reciever_id": _courierProfile!.id,
-          "amount": widget.delivery.id,
-        });
+      if (balance >= widget.delivery.amount!) {
+        var res = await _sendPayment(
+            _courierProfile!.id!, widget.delivery.amount!.toDouble());
 
-        if (res.data == 1) {
-          await FirebaseFirestore.instance
-              .collection('jobs')
-              .doc(widget.delivery.id)
-              .update({
-            "courier_id": _courierProfile!.id,
-            "status": "paid",
+        var batch = FirebaseFirestore.instance.batch();
+
+        if (res == 1) {
+          batch.update(
+              FirebaseFirestore.instance
+                  .collection('jobs')
+                  .doc(widget.delivery.id),
+              {
+                "courier_id": _courierProfile!.id,
+                "status": "paid",
+              });
+
+          batch.set(FirebaseFirestore.instance.collection("activities").doc(), {
+            "uid": FirebaseAuth.instance.currentUser!.uid,
+            "activity": "You made a payment of ${widget.delivery.amount}",
+            "time": Timestamp.now(),
           });
+
+          await batch.commit();
 
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -117,7 +152,7 @@ class _TrackingDetailState extends State<TrackingDetail> {
         if (r == 1) {
           await Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => const Wallet(),
+              builder: (context) => const WalletHome(),
             ),
           );
         }
@@ -150,6 +185,8 @@ class _TrackingDetailState extends State<TrackingDetail> {
   }
 
   _deleteDelevery() async {
+    var batch = FirebaseFirestore.instance.batch();
+
     var delv = await FirebaseFirestore.instance
         .collection("jobs")
         .doc(widget.delivery.id)
@@ -159,16 +196,24 @@ class _TrackingDetailState extends State<TrackingDetail> {
           .collection("requests")
           .where("job_id", isEqualTo: delv.id)
           .get();
+
       if (req.docs.isNotEmpty) {
         await FirebaseFirestore.instance
             .collection("requests")
             .doc(req.docs.first.id)
             .delete();
       }
-      await FirebaseFirestore.instance
-          .collection("jobs")
-          .doc(delv.id)
-          .update({"status": "canceled"});
+      batch.update(FirebaseFirestore.instance.collection("jobs").doc(delv.id),
+          {"status": "canceled"});
+
+      batch.set(FirebaseFirestore.instance.collection("activities").doc(), {
+        "uid": FirebaseAuth.instance.currentUser!.uid,
+        "activity": "Canceled a transaction",
+        "time": Timestamp.now(),
+      });
+
+      await batch.commit();
+
       Navigator.of(context).pop();
     }
   }

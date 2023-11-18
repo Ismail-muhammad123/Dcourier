@@ -1,25 +1,73 @@
 import 'package:app/constants.dart';
+import 'package:app/data/wallet_data.dart';
+import 'package:app/data/wallet_transactions_history.dart';
 import 'package:app/pages/wallet/add_money.dart';
 import 'package:app/pages/wallet/withdraw.dart';
 import 'package:app/widgets/buttons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-class Wallet extends StatefulWidget {
-  const Wallet({super.key});
+class WalletHome extends StatefulWidget {
+  const WalletHome({super.key});
 
   @override
-  State<Wallet> createState() => _WalletState();
+  State<WalletHome> createState() => _WalletHomeState();
 }
 
-class _WalletState extends State<Wallet> {
+class _WalletHomeState extends State<WalletHome> {
+  final TextEditingController _bankNameController = TextEditingController();
+  final TextEditingController _accountNameController = TextEditingController();
+  final TextEditingController _accountNumberController =
+      TextEditingController();
+
   var uid = FirebaseAuth.instance.currentUser!.uid;
-  // _getWallet() async {
-  //   return await ;
-  // }
+
   bool _balanceVisible = true;
+  double _availableBalance = 0;
+
+  Wallet? _wallet;
+
+  _getWallet() async {
+    var wallet =
+        await FirebaseFirestore.instance.collection("wallets").doc(uid).get();
+    if (wallet.exists) {
+      setState(() {
+        _wallet = Wallet.fromMap(wallet.data()!);
+      });
+    } else {
+      setState(() {
+        _wallet = Wallet(accountName: "", accountNumber: "", bankName: '');
+      });
+    }
+  }
+
+  _getWalletBalance() async {
+    var transactions = await FirebaseFirestore.instance
+        .collection("wallet_transactions")
+        .where("owner", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .get();
+    double balance = 0;
+    for (var i in transactions.docs) {
+      balance = balance +
+          (i.data()['credit_amoun'] ?? 0) -
+          (i.data()['debit_amount'] ?? 0);
+    }
+    // var walletBalance = await getBalancefunc.call<num>();
+    // var balance = walletBalance.data;
+    // print("balance: $balance");
+    setState(() {
+      _availableBalance = balance;
+    });
+  }
+
   _addBank() async {
+    if (_wallet != null) {
+      _bankNameController.text = _wallet!.bankName!;
+      _accountNameController.text = _wallet!.accountName!;
+      _accountNumberController.text = _wallet!.accountNumber!;
+    }
     await showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -34,7 +82,7 @@ class _WalletState extends State<Wallet> {
                   .get(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
+                  return const Center(
                     child: CircularProgressIndicator(),
                   );
                 }
@@ -49,6 +97,7 @@ class _WalletState extends State<Wallet> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       TextFormField(
+                        controller: _bankNameController,
                         decoration: InputDecoration(
                           label: const Text("Bank Name"),
                           border: OutlineInputBorder(
@@ -60,6 +109,7 @@ class _WalletState extends State<Wallet> {
                         ),
                       ),
                       TextFormField(
+                        controller: _accountNumberController,
                         decoration: InputDecoration(
                           label: const Text("Account Number"),
                           border: OutlineInputBorder(
@@ -71,6 +121,7 @@ class _WalletState extends State<Wallet> {
                         ),
                       ),
                       TextFormField(
+                        controller: _accountNameController,
                         decoration: InputDecoration(
                           label: const Text("Account Name"),
                           border: OutlineInputBorder(
@@ -82,34 +133,27 @@ class _WalletState extends State<Wallet> {
                         ),
                       ),
                       MaterialButton(
-                        onPressed: () async {
-                          await showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              surfaceTintColor: Colors.white,
-                              backgroundColor: Colors.white,
-                              title: const Text("Congratulations"),
-                              content: const Text(
-                                  "Your bank account has been successfully addedto your wallet"),
-                              actions: [
-                                MaterialButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  color: accentColor,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
+                        onPressed: _wallet == null
+                            ? null
+                            : () async {
+                                var w = Wallet(
+                                  accountName: _accountNameController.text,
+                                  accountNumber: _accountNumberController.text,
+                                  bankName: _bankNameController.text,
+                                  status: _wallet!.status ?? "",
+                                );
+                                await FirebaseFirestore.instance
+                                    .collection('wallets')
+                                    .doc(uid)
+                                    .set(w.toMap());
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        "Your bank account has been successfully addedto your wallet"),
                                   ),
-                                  child: const Text(
-                                    "Okay",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                          Navigator.of(context).pop();
-                        },
+                                );
+                                Navigator.of(context).pop();
+                              },
                         child: const GradientDecoratedContainer(
                           child: Text(
                             "Add bank Account",
@@ -127,6 +171,21 @@ class _WalletState extends State<Wallet> {
   }
 
   @override
+  void initState() {
+    _getWallet();
+    _getWalletBalance();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _bankNameController.dispose();
+    _accountNameController.dispose();
+    _accountNumberController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -141,7 +200,7 @@ class _WalletState extends State<Wallet> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      backgroundColor: Color.fromARGB(255, 227, 227, 227),
+      backgroundColor: const Color.fromARGB(255, 227, 227, 227),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -156,7 +215,7 @@ class _WalletState extends State<Wallet> {
                   borderRadius: BorderRadius.circular(30),
                 ),
                 alignment: Alignment.center,
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
                     Row(
@@ -186,7 +245,10 @@ class _WalletState extends State<Wallet> {
                     Row(
                       children: [
                         Text(
-                          _balanceVisible ? "N15,000.00" : "* * * *",
+                          _balanceVisible
+                              ? NumberFormat("###,###,###.0#", "en_US")
+                                  .format(_availableBalance)
+                              : "* * * *",
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 30,
@@ -195,7 +257,7 @@ class _WalletState extends State<Wallet> {
                         ),
                       ],
                     ),
-                    Spacer(),
+                    const Spacer(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -309,7 +371,7 @@ class _WalletState extends State<Wallet> {
                   const SizedBox(
                     width: 6,
                   ),
-                  const Text("754234567"),
+                  Text(_wallet != null ? _wallet!.accountNumber ?? '' : ""),
                   const Spacer(),
                   GestureDetector(
                     onTap: () async {
@@ -327,18 +389,18 @@ class _WalletState extends State<Wallet> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: Text("Okay"),
+                              child: const Text("Yes"),
                             ),
                             MaterialButton(
                               onPressed: () => Navigator.of(context).pop(0),
                               color: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
-                                side: BorderSide(
+                                side: const BorderSide(
                                   color: Colors.red,
                                 ),
                               ),
-                              child: Text(
+                              child: const Text(
                                 "Cancel",
                                 style: TextStyle(
                                   color: Colors.red,
@@ -348,6 +410,23 @@ class _WalletState extends State<Wallet> {
                           ],
                         ),
                       );
+                      if (res == 1) {
+                        var w = Wallet(
+                            accountName: "",
+                            accountNumber: "",
+                            bankName: "",
+                            status: _wallet!.status);
+
+                        await FirebaseFirestore.instance
+                            .collection('wallets')
+                            .doc(uid)
+                            .update(w.toMap());
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Account Details removed"),
+                          ),
+                        );
+                      }
                     },
                     child: const Text(
                       "remove",
@@ -398,43 +477,49 @@ class _WalletState extends State<Wallet> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(15),
                   ),
-                  child: ListView(
-                    children: [
-                      Card(
-                        color: Colors.white,
-                        surfaceTintColor: Colors.white,
-                        child: ListTile(
-                          title: Text("Credit"),
-                          subtitle: Text(
-                            "28-12-2023",
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                          trailing: Text(
-                            "+ N1,000",
-                            style: TextStyle(
-                              color: Colors.green,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Card(
-                        color: Colors.white,
-                        surfaceTintColor: Colors.white,
-                        child: ListTile(
-                          title: Text("Delivery paid"),
-                          subtitle: Text(
-                            "28-12-2023",
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                          trailing: Text(
-                            "- N1,000",
-                            style: TextStyle(
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                      )
-                    ],
+                  child: FutureBuilder(
+                    future: FirebaseFirestore.instance
+                        .collection("wallet_transactions")
+                        .where("owner", isEqualTo: uid)
+                        .get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (!snapshot.hasData) {
+                        return const Center(
+                          child: Text("an error has occured"),
+                        );
+                      }
+                      return ListView(
+                        children: snapshot.data!.docs
+                            .map(
+                              (e) => WalletTransactions.fromMap(e.data()),
+                            )
+                            .map(
+                              (e) => Card(
+                                color: Colors.white,
+                                surfaceTintColor: Colors.white,
+                                child: ListTile(
+                                  title: Text((e.creditAmount!).toDouble() > 0.0
+                                      ? "Credit"
+                                      : "Debit"),
+                                  subtitle: Text(
+                                    e.time.toString(),
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                  trailing: Text(
+                                    "${e.creditAmount! > 0 ? '+' : '-'} N ${e.creditAmount! > 0 ? e.creditAmount : e.debitAmount}",
+                                    style: const TextStyle(
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      );
+                    },
                   ),
                 ),
               ),

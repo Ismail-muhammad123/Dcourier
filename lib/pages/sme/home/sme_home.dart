@@ -3,6 +3,8 @@ import 'package:app/data/delivery_data.dart';
 import 'package:app/data/job_request_data.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import '../menu.dart';
 import 'package:flutter/material.dart';
 import '../../../widgets/buttons.dart';
@@ -36,18 +38,50 @@ class _SMEHomePageState extends State<SMEHomePage> {
   final TextEditingController _recieverPhoneNumberController =
       TextEditingController();
 
+  String pickupAddress = "";
+  LatLng? pickupPosition;
+
   var now = TimeOfDay.now();
 
   Future<Map<String, dynamic>> _getLocation() async {
-    await Navigator.of(context).push(
+    Map<String, dynamic> addr = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const LocationsMap(),
       ),
     );
-    return {};
+    return addr;
+  }
+
+  Future<void> _updateAmount() async {
+    setState(() => amount = 0);
+    var pricing = await FirebaseFirestore.instance
+        .collection('pricing')
+        .where("size", isEqualTo: _size)
+        .get();
+    setState(() {
+      amount = pricing.docs.first.data()[_vehicleType] ?? 0;
+    });
   }
 
   Future<void> _createDeliveryJob() async {
+    if (amount == 0) {
+      await showDialog(
+        context: context,
+        builder: (context) => const AlertDialog(
+          surfaceTintColor: Colors.white,
+          backgroundColor: Colors.white,
+          icon: Icon(
+            Icons.error,
+          ),
+          iconColor: Colors.redAccent,
+          content: Text(
+            "Could not load price, try changing the vehicle, or size, or refresh the price",
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+      return;
+    }
     if (_pickupAddressController.text.trim().isEmpty ||
         _deliveryAddressController.text.trim().isEmpty ||
         _recieverNameController.text.trim().isEmpty ||
@@ -179,28 +213,56 @@ class _SMEHomePageState extends State<SMEHomePage> {
                   ),
                 ],
               ),
-              Container(
-                width: 300,
-                decoration: BoxDecoration(
-                  border: Border.all(color: tartiaryColor, width: 2),
-                  borderRadius: BorderRadius.circular(15),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8.0,
+                  horizontal: 14.0,
                 ),
-                // child: const Row(
-                //   children: [
-                //     Icon(Icons.location_pin),
-                //     Text("Select Pick-up Address"),
-                //     Spacer(),
-                //     Icon(Icons.arrow_forward_ios),
-                //   ],
-                // ),
-                child: TextFormField(
-                  controller: _pickupAddressController,
-                  keyboardType: TextInputType.streetAddress,
-                  decoration: InputDecoration(
-                    fillColor: tartiaryColor,
-                    prefixIcon: const Icon(Icons.phone),
-                    label: const Text("Enter pick-up address"),
-                    border: InputBorder.none,
+                child: GestureDetector(
+                  onTap: () async {
+                    var addr = await _getLocation();
+                    setState(() {
+                      if (addr['position'] != null) {
+                        pickupPosition = addr['posiotion'];
+                      }
+                      pickupAddress = (addr['address'] as String).isNotEmpty
+                          ? addr['address']
+                          : "${(addr['position'] as LatLng).latitude}, ${(addr['position'] as LatLng).longitude}";
+                    });
+                  },
+                  child: Container(
+                    // width: 300,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: tartiaryColor, width: 2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    padding: const EdgeInsets.all(8.0),
+                    child: SizedBox(
+                      width: double.maxFinite,
+                      height: 40,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.location_pin),
+                          Text(
+                            pickupAddress.isEmpty
+                                ? "Select Pick-up Address"
+                                : pickupAddress,
+                          ),
+                          const Spacer(),
+                          const Icon(Icons.arrow_forward_ios),
+                        ],
+                      ),
+                    ),
+                    // child: TextFormField(
+                    //   controller: _pickupAddressController,
+                    //   keyboardType: TextInputType.streetAddress,
+                    //   decoration: InputDecoration(
+                    //     fillColor: tartiaryColor,
+                    //     prefixIcon: const Icon(Icons.phone),
+                    //     label: const Text("Enter pick-up address"),
+                    //     border: InputBorder.none,
+                    //   ),
+                    // ),
                   ),
                 ),
               ),
@@ -347,7 +409,10 @@ class _SMEHomePageState extends State<SMEHomePage> {
                 children: ["Small", "Medium", "Large"]
                     .map(
                       (e) => GestureDetector(
-                        onTap: () => setState(() => _size = e.toLowerCase()),
+                        onTap: () {
+                          setState(() => _size = e.toLowerCase());
+                          _updateAmount();
+                        },
                         child: Container(
                           width: 80,
                           height: 40,
@@ -386,7 +451,10 @@ class _SMEHomePageState extends State<SMEHomePage> {
                 spacing: 16.0,
                 children: [
                   GestureDetector(
-                    onTap: () => setState(() => _vehicleType = "bike"),
+                    onTap: () {
+                      setState(() => _vehicleType = "bike");
+                      _updateAmount();
+                    },
                     child: Container(
                       width: 60,
                       height: 40,
@@ -406,7 +474,10 @@ class _SMEHomePageState extends State<SMEHomePage> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => setState(() => _vehicleType = "trycyle"),
+                    onTap: () {
+                      setState(() => _vehicleType = "trycyle");
+                      _updateAmount();
+                    },
                     child: Container(
                       width: 60,
                       height: 40,
@@ -426,7 +497,10 @@ class _SMEHomePageState extends State<SMEHomePage> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => setState(() => _vehicleType = "truck"),
+                    onTap: () {
+                      setState(() => _vehicleType = "truck");
+                      _updateAmount();
+                    },
                     child: Container(
                       width: 60,
                       height: 40,
@@ -451,8 +525,13 @@ class _SMEHomePageState extends State<SMEHomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text("Total Estimated Price:"),
+                    Spacer(),
+                    IconButton(
+                      onPressed: () => _updateAmount(),
+                      icon: const Icon(Icons.refresh),
+                    ),
                     Text(
-                      "N1,200",
+                      NumberFormat.currency(symbol: 'NGN ').format(amount),
                       style: thickTextStyle.copyWith(color: primaryColor),
                     ),
                   ],
