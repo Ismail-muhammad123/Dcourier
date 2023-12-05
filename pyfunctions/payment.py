@@ -1,8 +1,5 @@
-from django.utils.timezone import make_aware
-from .constants import *
+from constants import *
 import requests
-
-
 
 
 def checkout(chargeID, userID, amount, name, email, phoneNumber):
@@ -19,43 +16,36 @@ def checkout(chargeID, userID, amount, name, email, phoneNumber):
         "email": email,
         "amount": amount * 100,
         "currency": "NGN",
-        "callback_url": verification_url,
+        # "callback_url": verification_url,
         "metadata": {
             "charge_id": chargeID,
-            "customer": {
-                "email": email,
-                "phone_number": phoneNumber,
-                "name": name
-            },
+            "customer": {"email": email, "phone_number": phoneNumber, "name": name},
         },
     }
     res = requests.post(url, headers=headers, json=data)
     response = res.json()
-    print(response['status'])
+    print(response["status"])
     print(response)
-    if response['status'] == True:
-        return (response['data']['authorization_url'], True)
+    if response["status"] == True:
+        return (response["data"]["authorization_url"], True)
     else:
         # pprint(response)
         return (None, False)
-  
 
 
 def verify_payment(request_data):
     headers = {"Authorization": f"Bearer {PAYMENT_GATEAWAY_SECRET_KEY}"}
-    data = request_data
 
-    tx_ref = data['trxref']
-    response = requests.get(
-        PAYMENT_VERIFICATION_URL + tx_ref, headers=headers)
+    tx_ref = request_data["trxref"]
+    response = requests.get(PAYMENT_VERIFICATION_URL + tx_ref, headers=headers)
     # print(response.status_code)
     if response.status_code == 200:
         res = response.json()
-        status = res['data']['log']['success']
+        status = res["data"]["log"]["success"]
         # print(status)
         if status:
-            return True
-        else:
-            return False
-    else:
-        return False
+            return (True, res["data"])
+
+    return (False, res["data"])
+
+

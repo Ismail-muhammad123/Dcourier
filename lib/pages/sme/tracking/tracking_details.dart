@@ -35,16 +35,16 @@ class _TrackingDetailState extends State<TrackingDetail> {
   //     FirebaseFunctions.instance.httpsCallable("getWalletBalance");
 
   Future<double> _getWalletBalance() async {
-    try {
-      // var walletBalance = await getBalancefunc.call<num>();
-      // var balance = walletBalance.data as double;
-      // print("balance: $balance");
-      // return balance;
-    } on FirebaseFunctionsException catch (error) {
-      print(error.code);
-      print(error.details);
-      print(error.message);
-    }
+    // try {
+    // var walletBalance = await getBalancefunc.call<num>();
+    // var balance = walletBalance.data as double;
+    // print("balance: $balance");
+    // return balance;
+    // } on FirebaseFunctionsException catch (error) {
+    //   print(error.code);
+    //   print(error.details);
+    //   print(error.message);
+    // }
     var transactions = await FirebaseFirestore.instance
         .collection("wallet_transactions")
         .where("owner", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
@@ -61,20 +61,9 @@ class _TrackingDetailState extends State<TrackingDetail> {
     return balance;
   }
 
-  Future<int?> _sendPayment(String to, double amount) async {
-    try {
-      var res = await sendMoneyfunc.call<int>({
-        "to": to,
-        "amount": amount,
-      });
-      return res.data;
-    } on FirebaseFunctionsException catch (error) {
-      print(error.code);
-      print(error.message);
-      print(error.details);
-      return null;
-    }
-  }
+  // Future<int?> _sendPayment(String to, double amount) async {
+
+  // }
 
   _makePayment() async {
     setState(() => _isLoading = true);
@@ -83,15 +72,22 @@ class _TrackingDetailState extends State<TrackingDetail> {
 
       // var balance = jsonDecode(walletBalance.data);
       // print("balance: $balance");
+
       var balance = await _getWalletBalance();
 
       if (balance >= widget.delivery.amount!) {
-        var res = await _sendPayment(
-            _courierProfile!.id!, widget.delivery.amount!.toDouble());
+        // var res = await _sendPayment(
+        //     _courierProfile!.id!, widget.delivery.amount!.toDouble());
 
-        var batch = FirebaseFirestore.instance.batch();
+        var res = await sendMoneyfunc.call<int>({
+          "to": _courierProfile!.id!,
+          "amount": widget.delivery.amount!.toDouble(),
+        });
+
+        print("payment res: $res");
 
         if (res == 1) {
+          var batch = FirebaseFirestore.instance.batch();
           batch.update(
               FirebaseFirestore.instance
                   .collection('jobs')
@@ -109,6 +105,10 @@ class _TrackingDetailState extends State<TrackingDetail> {
 
           await batch.commit();
 
+          setState(() {
+            _isLoading = false;
+          });
+
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => PaymentSuccess(
@@ -119,6 +119,19 @@ class _TrackingDetailState extends State<TrackingDetail> {
             ),
           );
         }
+
+        // return res.data;
+        // } on FirebaseFunctionsException catch (error) {
+        //   print("error code:");
+        //   print(error.code);
+        //   print("error message:");
+        //   print(error.message);
+        //   print("error details:");
+        //   print(error.details);
+
+        //   setState(() => _isLoading = false);
+        //   // return null;
+        // }
       } else {
         var r = await showDialog(
           context: context,
@@ -167,7 +180,7 @@ class _TrackingDetailState extends State<TrackingDetail> {
           title: const Text("Error accesing wallet"),
           icon: const Icon(Icons.error),
           content: const Text(
-              "We could not access your wallet account balance, please try again later"),
+              "We could not process your payment at the moment, please try again later"),
           actions: [
             MaterialButton(
               onPressed: () => Navigator.of(context).pop(1),
