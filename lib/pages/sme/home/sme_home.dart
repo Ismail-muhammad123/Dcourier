@@ -1,6 +1,5 @@
 import 'package:app/constants.dart';
 import 'package:app/data/delivery_data.dart';
-import 'package:app/data/job_request_data.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -43,8 +42,8 @@ class _SMEHomePageState extends State<SMEHomePage> {
 
   var now = TimeOfDay.now();
 
-  Future<Map<String, dynamic>> _getLocation() async {
-    Map<String, dynamic> addr = await Navigator.of(context).push(
+  Future<Map<String, dynamic>?> _getLocation() async {
+    Map<String, dynamic>? addr = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const LocationsMap(),
       ),
@@ -82,7 +81,7 @@ class _SMEHomePageState extends State<SMEHomePage> {
       );
       return;
     }
-    if (_pickupAddressController.text.trim().isEmpty ||
+    if ((pickupAddress.isEmpty && pickupPosition == null) ||
         _deliveryAddressController.text.trim().isEmpty ||
         _recieverNameController.text.trim().isEmpty ||
         _recieverPhoneNumberController.text.trim().isEmpty) {
@@ -100,14 +99,17 @@ class _SMEHomePageState extends State<SMEHomePage> {
     var job = Delivery(
       itemType: _size,
       vehicleType: _vehicleType,
-      pickupAddress: _pickupAddressController.text.trim(),
+      pickupAddress: pickupAddress,
+      pickupCoodinate: pickupPosition != null
+          ? "${pickupPosition!.latitude},${pickupPosition!.longitude}"
+          : null,
       pickupTime: _pickUpTime,
       recieverName: _recieverNameController.text.trim(),
       recieverPhoneNumber: _recieverPhoneNumberController.text.trim(),
       deliveryAddress: _deliveryAddressController.text.trim(),
       senderId: uid,
       status: "pending",
-      amount: amount,
+      amount: amount.toDouble(),
     );
 
     // var batch = firestoreInctance.batch();
@@ -139,7 +141,7 @@ class _SMEHomePageState extends State<SMEHomePage> {
     setState(() => _loading = false);
 
     // navigate to the job applications page
-    Navigator.of(context).push(
+    await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => CourierList(
           delivery: job,
@@ -220,15 +222,17 @@ class _SMEHomePageState extends State<SMEHomePage> {
                 ),
                 child: GestureDetector(
                   onTap: () async {
-                    var addr = await _getLocation();
-                    setState(() {
-                      if (addr['position'] != null) {
-                        pickupPosition = addr['posiotion'];
-                      }
-                      pickupAddress = (addr['address'] as String).isNotEmpty
-                          ? addr['address']
-                          : "${(addr['position'] as LatLng).latitude}, ${(addr['position'] as LatLng).longitude}";
-                    });
+                    Map<String, dynamic>? addr = await _getLocation();
+                    if (addr != null) {
+                      setState(() {
+                        if (addr['position'] != null) {
+                          pickupPosition = addr['posiotion'];
+                        }
+                        pickupAddress = (addr['address'] as String).isNotEmpty
+                            ? addr['address']
+                            : "${(addr['position'] as LatLng).latitude}, ${(addr['position'] as LatLng).longitude}";
+                      });
+                    }
                   },
                   child: Container(
                     // width: 300,
@@ -525,7 +529,7 @@ class _SMEHomePageState extends State<SMEHomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text("Total Estimated Price:"),
-                    Spacer(),
+                    const Spacer(),
                     IconButton(
                       onPressed: () => _updateAmount(),
                       icon: const Icon(Icons.refresh),

@@ -5,7 +5,7 @@ class Delivery {
   String? itemType;
   String? vehicleType;
   String? pickupAddress;
-  List? pickupCoodinate;
+  String? pickupCoodinate;
   Timestamp? pickupTime;
   String? recieverName;
   String? recieverPhoneNumber;

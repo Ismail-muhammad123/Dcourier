@@ -46,17 +46,18 @@ class _WalletHomeState extends State<WalletHome> {
   _getWalletBalance() async {
     var transactions = await FirebaseFirestore.instance
         .collection("wallet_transactions")
-        .where("owner", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .where("uid", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
         .get();
     double balance = 0;
     for (var i in transactions.docs) {
       balance = balance +
-          (i.data()['credit_amoun'] ?? 0) -
+          (i.data()['credit_amount'] ?? 0) -
           (i.data()['debit_amount'] ?? 0);
     }
     // var walletBalance = await getBalancefunc.call<num>();
     // var balance = walletBalance.data;
-    // print("balance: $balance");
+    print("balance: $balance");
+
     setState(() {
       _availableBalance = balance;
     });
@@ -262,11 +263,16 @@ class _WalletHomeState extends State<WalletHome> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         GestureDetector(
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const AddMoneyPage(),
-                            ),
-                          ),
+                          onTap: () async {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => AddMoneyPage(
+                                  balance: _availableBalance,
+                                ),
+                              ),
+                            );
+                            _getWalletBalance();
+                          },
                           child: Column(
                             children: [
                               Container(
@@ -292,11 +298,16 @@ class _WalletHomeState extends State<WalletHome> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const WithdrawMoneyPage(),
-                            ),
-                          ),
+                          onTap: () async {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => WithdrawMoneyPage(
+                                  balance: _availableBalance,
+                                ),
+                              ),
+                            );
+                            _getWalletBalance();
+                          },
                           child: Column(
                             children: [
                               Container(
@@ -480,7 +491,7 @@ class _WalletHomeState extends State<WalletHome> {
                   child: FutureBuilder(
                     future: FirebaseFirestore.instance
                         .collection("wallet_transactions")
-                        .where("owner", isEqualTo: uid)
+                        .where("uid", isEqualTo: uid)
                         .get(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -491,11 +502,14 @@ class _WalletHomeState extends State<WalletHome> {
                           child: Text("an error has occured"),
                         );
                       }
+                      List<WalletTransactions> data = snapshot.data!.docs
+                          .map(
+                            (e) => WalletTransactions.fromMap(e.data()),
+                          )
+                          .toList();
+                      data.sort((a, b) => b.time!.compareTo(a.time!));
                       return ListView(
-                        children: snapshot.data!.docs
-                            .map(
-                              (e) => WalletTransactions.fromMap(e.data()),
-                            )
+                        children: data
                             .map(
                               (e) => Card(
                                 color: Colors.white,
@@ -505,13 +519,18 @@ class _WalletHomeState extends State<WalletHome> {
                                       ? "Credit"
                                       : "Debit"),
                                   subtitle: Text(
-                                    e.time.toString(),
+                                    DateFormat.yMMMEd().add_jm().format(
+                                          e.time!.toDate(),
+                                        ),
                                     style: const TextStyle(color: Colors.grey),
                                   ),
                                   trailing: Text(
-                                    "${e.creditAmount! > 0 ? '+' : '-'} N ${e.creditAmount! > 0 ? e.creditAmount : e.debitAmount}",
-                                    style: const TextStyle(
-                                      color: Colors.green,
+                                    e.description ??
+                                        "${e.creditAmount! > 0 ? 'Credited' : 'Debited'} N ${e.creditAmount! > 0 ? e.creditAmount : e.debitAmount}",
+                                    style: TextStyle(
+                                      color: e.debitAmount! > e.creditAmount!
+                                          ? Colors.red
+                                          : Colors.green,
                                     ),
                                   ),
                                 ),

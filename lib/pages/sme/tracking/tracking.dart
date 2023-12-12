@@ -88,11 +88,14 @@ class _TrackingPageState extends State<TrackingPage> {
                             height: 20,
                             width: 20,
                             decoration: BoxDecoration(
-                              color: e.status == "delivered"
+                              color: e.status == "delivered" ||
+                                      e.status == "recieved"
                                   ? Colors.green
                                   : e.status == "canceled"
                                       ? Colors.red
-                                      : Colors.grey,
+                                      : e.status == "enroute"
+                                          ? Colors.orange
+                                          : Colors.grey,
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),

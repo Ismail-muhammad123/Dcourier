@@ -76,10 +76,10 @@ export const releaseDeliveryPayment = https.onCall(async (data, context) => {
     const deliveryId = data.delivery_id;
 
     const firestoreFirebase = firestore;
-    const delivery = await firestoreFirebase
+    const deliveryRef =  firestoreFirebase
       .collection("jobs")
-      .doc(deliveryId)
-      .get();
+      .doc(deliveryId);
+      const delivery =await deliveryRef.get();
 
     const batch = firestoreFirebase.batch();
     const transactionsRef = firestoreFirebase.collection("transactions");
@@ -93,6 +93,7 @@ export const releaseDeliveryPayment = https.onCall(async (data, context) => {
     };
 
     batch.create(transactionsRef.doc(), receiverTransaction);
+    batch.update(deliveryRef, {status: "recieved"})
 
     await batch.commit();
     return { status: "success" };

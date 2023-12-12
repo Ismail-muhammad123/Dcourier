@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 
 class PaymentSuccess extends StatefulWidget {
   final String recieverName, recieverPhone;
-  final double amount;
+  final num amount;
   const PaymentSuccess({
     super.key,
     required this.recieverName,

@@ -1,6 +1,7 @@
 import 'package:app/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ActivitiesPage extends StatefulWidget {
   const ActivitiesPage({super.key});
@@ -90,7 +91,8 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                                     style: TextStyle(color: accentColor),
                                   ),
                                   subtitle: Text(
-                                    e.data()['time'].toString(),
+                                    DateFormat.yMMMd()
+                                        .format(e.data()['time'].toDate()),
                                     style: const TextStyle(
                                       color: Colors.grey,
                                     ),

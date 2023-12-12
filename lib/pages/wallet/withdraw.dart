@@ -8,7 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class WithdrawMoneyPage extends StatefulWidget {
-  const WithdrawMoneyPage({super.key});
+  final num balance;
+  const WithdrawMoneyPage({
+    super.key,
+    required this.balance,
+  });
 
   @override
   State<WithdrawMoneyPage> createState() => _WithdrawMoneyPageState();
@@ -16,7 +20,6 @@ class WithdrawMoneyPage extends StatefulWidget {
 
 class _WithdrawMoneyPageState extends State<WithdrawMoneyPage> {
   final TextEditingController _amountController = TextEditingController();
-  double _availableBalance = 0.0;
   Wallet? _wallet;
   var uid = FirebaseAuth.instance.currentUser!.uid;
 
@@ -30,30 +33,12 @@ class _WithdrawMoneyPageState extends State<WithdrawMoneyPage> {
     }
   }
 
-  _getWalletBalance() async {
-    var transactions = await FirebaseFirestore.instance
-        .collection("wallet_transactions")
-        .where("owner", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-        .get();
-    double balance = 0;
-    for (var i in transactions.docs) {
-      balance = balance +
-          (i.data()['credit_amoun'] ?? 0) -
-          (i.data()['debit_amount'] ?? 0);
-    }
-    // var walletBalance = await getBalancefunc.call<num>();
-    // var balance = walletBalance.data;
-    // print("balance: $balance");
-    setState(() {
-      _availableBalance = balance;
-    });
-  }
-
   _requestWithdraw() async {
     var uid = FirebaseAuth.instance.currentUser!.uid;
 
-    var amount = double.parse(_amountController.text);
-    if (amount > _availableBalance) {
+    var amount = double.parse(
+        _amountController.text.isEmpty ? "0" : _amountController.text);
+    if (amount > widget.balance) {
       await showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -74,31 +59,55 @@ class _WithdrawMoneyPageState extends State<WithdrawMoneyPage> {
       );
       return;
     }
+
+    if (_wallet!.accountName!.isEmpty ||
+        _wallet!.accountNumber!.isEmpty ||
+        _wallet!.bankName!.isEmpty) {
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: const Text(
+            "You have not provided your bank information, Please Make sure you do so.",
+          ),
+          actions: [
+            MaterialButton(
+              onPressed: () => Navigator.of(context).pop(),
+              color: accentColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text("Okay"),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     var req = WalletCashOutRquest(
-        amount: amount,
-        time: Timestamp.now(),
-        status: "requested",
-        walletId: uid,
-        accountName: _wallet!.accountName!,
-        accountNumber: _wallet!.accountNumber,
-        bankName: _wallet!.bankName);
-      
+      amount: amount,
+      time: Timestamp.now(),
+      status: "requested",
+      walletId: uid,
+      accountName: _wallet!.accountName!,
+      accountNumber: _wallet!.accountNumber,
+      bankName: _wallet!.bankName,
+    );
+
     var batch = FirebaseFirestore.instance.batch();
 
-    batch.set(FirebaseFirestore.instance
-        .collection("withdrawal_requests").doc(), req.toMap()!); 
-    
-    
-    
-    batch.set(FirebaseFirestore.instance
-        .collection("activities").doc(), {
-          "uid": uid,
-          "activity": "Requested withrawal of $amount",
-          "time": Timestamp.now(),
-        }); 
+    batch.set(
+      FirebaseFirestore.instance.collection("withdrawal_requests").doc(),
+      req.toMap(),
+    );
+
+    batch.set(FirebaseFirestore.instance.collection("activities").doc(), {
+      "uid": uid,
+      "activity": "Requested withrawal of $amount",
+      "time": Timestamp.now(),
+    });
 
     await batch.commit();
-    
 
     await showDialog(
       context: context,
@@ -130,7 +139,6 @@ class _WithdrawMoneyPageState extends State<WithdrawMoneyPage> {
   @override
   void initState() {
     _getWallet();
-    _getWalletBalance();
     super.initState();
   }
 
@@ -149,7 +157,7 @@ class _WithdrawMoneyPageState extends State<WithdrawMoneyPage> {
       ),
       backgroundColor: const Color.fromARGB(255, 227, 227, 227),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: _availableBalance < 100.0 || _wallet == null
+      floatingActionButton: widget.balance < 100.0 || _wallet == null
           ? null
           : Padding(
               padding: const EdgeInsets.all(18.0),
@@ -186,7 +194,7 @@ class _WithdrawMoneyPageState extends State<WithdrawMoneyPage> {
                 child: TextFormField(
                   enabled: false,
                   initialValue:
-                      "N ${NumberFormat("###.0#", "en_US").format(_availableBalance)}",
+                      "N ${NumberFormat("###.0#", "en_US").format(widget.balance)}",
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                   ),
@@ -208,7 +216,7 @@ class _WithdrawMoneyPageState extends State<WithdrawMoneyPage> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: TextFormField(
-                  initialValue: "1,000.00",
+                  controller: _amountController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     border: InputBorder.none,

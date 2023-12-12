@@ -150,6 +150,7 @@ class _LocationsMapState extends State<LocationsMap> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
+            heroTag: "my_location",
             onPressed: _gotoMyLocation,
             backgroundColor: Colors.white,
             child: const Icon(Icons.my_location),
@@ -158,6 +159,7 @@ class _LocationsMapState extends State<LocationsMap> {
             height: 10,
           ),
           FloatingActionButton(
+            heroTag: "return",
             onPressed: _returnAddress,
             backgroundColor: tartiaryColor,
             child: const Icon(Icons.check),

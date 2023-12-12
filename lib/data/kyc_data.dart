@@ -5,6 +5,7 @@ class KYC {
   String? idType;
   String? idPictureFront;
   String? idPictureBack;
+  String? passportPicture;
 
   String? bvn;
   String? accountName;
@@ -20,6 +21,7 @@ class KYC {
     this.id,
     this.idType,
     this.idPictureFront,
+    this.passportPicture,
     this.idPictureBack,
     this.dateFiled,
     this.verified,
@@ -33,8 +35,9 @@ class KYC {
   factory KYC.fromMap(Map<String, dynamic> data) {
     return KYC(
       idType: data['id_type'],
-      idPictureFront: data['id_picture_front'],
-      idPictureBack: data['id_picture_back'],
+      idPictureFront: data['id_front'],
+      passportPicture: data['passport'],
+      idPictureBack: data['id_back'],
       dateFiled: data['date_filed'],
       verified: data['verified'],
       bvn: data['bvn'],
@@ -50,6 +53,7 @@ class KYC {
       "id_type": idType,
       "id_picture_front": idPictureFront,
       "id_picture_back": idPictureBack,
+      "passport": passportPicture,
       "date_filed": dateFiled,
       "verified": verified,
       "bvn": bvn,

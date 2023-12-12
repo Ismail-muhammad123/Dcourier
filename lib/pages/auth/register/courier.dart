@@ -182,16 +182,16 @@ class CourierRegistrationPageState extends State<CourierRegistrationPage> {
 
       // add KYC batch
       var kyc = KYC(
-        idType: _idType,
-        dateFiled: Timestamp.now(),
-        bvn: _bvnController.text.trim(),
-        accountName: _accountNameController.text.trim(),
-        accountNumber: _accountNumberController.text.trim(),
-        bankName: _bankNameController.text.trim(),
-        vehiclePlateNumber: _vehiclePlateNumberController.text.trim(),
-        idPictureFront: "kyc/id/${user.user!.uid}_front.png",
-        idPictureBack: "kyc/id/${user.user!.uid}_back.png",
-      );
+          idType: _idType,
+          dateFiled: Timestamp.now(),
+          bvn: _bvnController.text.trim(),
+          accountName: _accountNameController.text.trim(),
+          accountNumber: _accountNumberController.text.trim(),
+          bankName: _bankNameController.text.trim(),
+          vehiclePlateNumber: _vehiclePlateNumberController.text.trim(),
+          idPictureFront: "kyc/id/${user.user!.uid}_front.png",
+          idPictureBack: "kyc/id/${user.user!.uid}_back.png",
+          passportPicture: "kyc/passports/${user.user!.uid}.jpg");
 
       var kycRef = db.collection("kyc").doc(user.user!.uid);
       batch.set(kycRef, kyc.toMap());
