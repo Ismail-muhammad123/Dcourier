@@ -53,11 +53,22 @@ class _HomeTabState extends State<HomeTab> {
 
   _updateAvailability(bool val) async {
     var uid = FirebaseAuth.instance.currentUser!.uid;
-    await FirebaseFirestore.instance
-        .collection("profiles")
-        .doc(uid)
-        .update({'available': val});
-    setState(() {});
+
+    var userKyc =
+        await FirebaseFirestore.instance.collection("kyc").doc(uid).get();
+    if (userKyc.data()!['verified'] == true) {
+      await FirebaseFirestore.instance
+          .collection("profiles")
+          .doc(uid)
+          .update({'available': val});
+      setState(() {});
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Your account is not verified yet"),
+        ),
+      );
+    }
   }
 
   @override

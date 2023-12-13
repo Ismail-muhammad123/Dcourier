@@ -51,8 +51,8 @@ class KYC {
   Map<String, dynamic> toMap() {
     return {
       "id_type": idType,
-      "id_picture_front": idPictureFront,
-      "id_picture_back": idPictureBack,
+      "id_front": idPictureFront,
+      "id_back": idPictureBack,
       "passport": passportPicture,
       "date_filed": dateFiled,
       "verified": verified,

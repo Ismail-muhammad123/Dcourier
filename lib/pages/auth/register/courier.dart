@@ -203,7 +203,7 @@ class CourierRegistrationPageState extends State<CourierRegistrationPage> {
         bankName: _bankNameController.text.trim(),
         status: "active",
       );
-      var walletRef = db.collection("kyc").doc(user.user!.uid);
+      var walletRef = db.collection("wallets").doc(user.user!.uid);
       batch.set(walletRef, wallet.toMap());
 
       // Commit the batch
