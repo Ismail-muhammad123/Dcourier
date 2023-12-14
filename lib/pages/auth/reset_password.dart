@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../constants.dart';
@@ -10,6 +11,7 @@ class ResetPasswordPage extends StatefulWidget {
 }
 
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
+  final TextEditingController _emailController = TextEditingController();
   bool _loading = false;
   bool _submited = false;
   bool _success = true;
@@ -18,13 +20,31 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     setState(() {
       _loading = true;
     });
-    await Future.delayed(const Duration(seconds: 3));
-    setState(() {
-      _message = "A password reset link has been sent to your email";
-      _loading = false;
-      _submited = true;
-      _success = true;
+    // await Future.delayed(const Duration(seconds: 3));
+    FirebaseAuth.instance
+        .sendPasswordResetEmail(email: _emailController.text)
+        .then((value) {
+      setState(() {
+        _message = "A password reset link has been sent to your email";
+        _loading = false;
+        _submited = true;
+        _success = true;
+      });
+    }).onError((error, stackTrace) {
+      print(error);
+      setState(() {
+        _message = "A password reset failed, check the email and try again";
+        _loading = false;
+        _submited = true;
+        _success = false;
+      });
     });
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
   }
 
   @override
@@ -84,6 +104,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: TextFormField(
+                        controller: _emailController,
                         decoration: const InputDecoration(
                           label: Text("Enter your email here"),
                           prefixIcon: Icon(Icons.email),
