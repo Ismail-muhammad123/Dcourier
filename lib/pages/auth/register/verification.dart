@@ -17,7 +17,7 @@ class VerificationPage extends StatefulWidget {
 }
 
 class _VerificationPageState extends State<VerificationPage> {
-  final TextEditingController _otpController = TextEditingController();
+  // final TextEditingController _otpController = TextEditingController();
 
   String errorText = "";
   var auth = FirebaseAuth.instance;
@@ -190,7 +190,7 @@ class _VerificationPageState extends State<VerificationPage> {
                 onTap: () async {
                   await widget.credential.user!.sendEmailVerification();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text("Verification email sent"),
                     ),
                   );

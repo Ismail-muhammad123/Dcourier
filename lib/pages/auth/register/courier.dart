@@ -173,7 +173,7 @@ class CourierRegistrationPageState extends State<CourierRegistrationPage> {
         email: _emailController.text.trim(),
         phoneNumber: _phoneNumberController.text.trim(),
         dateJoined: Timestamp.now(),
-        profilePicture: "passports/sme/${user.user!.uid}.jpg",
+        profilePicture: "passports/courier/${user.user!.uid}.jpg",
         vehicleType: _vehicleType,
       );
 
@@ -209,13 +209,21 @@ class CourierRegistrationPageState extends State<CourierRegistrationPage> {
       // Commit the batch
       await batch.commit();
 
-      // UPLOAD Prfile picture
       if (_passport != null) {
+      // UPLOAD Prfile picture
         var profilePicUploadTask = FirebaseStorage.instance
             .ref()
-            .child("passports/sme/${user.user!.uid}.jpg")
+            .child("profile_picture/courier/${user.user!.uid}.jpg")
             .putData(_passport!);
         await profilePicUploadTask.whenComplete(() => null);
+
+      // UPLOAD KYC PASSPORT
+        var kycPassportUploadTask = FirebaseStorage.instance
+            .ref()
+            .child("kyc/passports/${user.user!.uid}.jpg")
+            .putData(_passport!);
+        await kycPassportUploadTask.whenComplete(() => null);
+
       } else {
         throw Exception();
       }
