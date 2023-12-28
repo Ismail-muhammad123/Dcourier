@@ -68,8 +68,12 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                     if (!snapshot.hasData) {
                       return const Center(child: Text("Not found"));
                     }
+                    var data =
+                        snapshot.data!.docs.map((e) => e.data()).toList();
+                    data.sort((a, b) =>
+                        (b['time'] as Timestamp).compareTo(a['time']));
                     return ListView(
-                      children: snapshot.data!.docs
+                      children: data
                           .map(
                             (e) => Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -87,12 +91,12 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                                 ),
                                 child: ListTile(
                                   title: Text(
-                                    e.data()['activity'],
+                                    e['activity'],
                                     style: TextStyle(color: accentColor),
                                   ),
                                   subtitle: Text(
                                     DateFormat.yMMMd()
-                                        .format(e.data()['time'].toDate()),
+                                        .format(e['time'].toDate()),
                                     style: const TextStyle(
                                       color: Colors.grey,
                                     ),

@@ -84,36 +84,53 @@ class _WithdrawMoneyPageState extends State<WithdrawMoneyPage> {
       return;
     }
 
-    var req = WalletCashOutRquest(
-      amount: amount,
-      time: Timestamp.now(),
-      status: "requested",
-      walletId: uid,
-      accountName: _wallet!.accountName!,
-      accountNumber: _wallet!.accountNumber,
-      bankName: _wallet!.bankName,
-    );
+    var user =
+        await FirebaseFirestore.instance.collection("profiles").doc(uid).get();
+    if (user.exists && user.data() != null) {
+      var req = WalletCashOutRquest(
+        amount: amount,
+        status: "requested",
+        walletId: uid,
+        accountName: _wallet!.accountName!,
+        accountNumber: _wallet!.accountNumber ?? "",
+        bankName: _wallet!.bankName ?? "",
+        balance: widget.balance.toDouble(),
+        rejectedAt: null,
+        sentAt: null,
+        timeRequested: Timestamp.now(),
+        uid: uid,
+        userType: user.data()!['account_type'] ?? "",
+      );
 
-    var batch = FirebaseFirestore.instance.batch();
+      var batch = FirebaseFirestore.instance.batch();
 
-    batch.set(
-      FirebaseFirestore.instance.collection("withdrawal_requests").doc(),
-      req.toMap(),
-    );
+      batch.set(
+        FirebaseFirestore.instance.collection("withdrawal_requests").doc(),
+        req.toMap(),
+      );
 
-    batch.set(FirebaseFirestore.instance.collection("activities").doc(), {
-      "uid": uid,
-      "activity": "Requested withrawal of $amount",
-      "time": Timestamp.now(),
-    });
+      batch.set(FirebaseFirestore.instance.collection("activities").doc(), {
+        "uid": uid,
+        "activity": "Requested withrawal of $amount",
+        "time": Timestamp.now(),
+      });
 
-    await batch.commit();
+      await batch.commit();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              "Your request to withdraw money from you wallet has been recieved and is being processed."),
+        ),
+      );
+      Navigator.of(context).pop();
+    }
 
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         content: const Text(
-          "Your request to withdraw money from you wallet has been recieved and is being processed.",
+          "Failed to request withdrawal, please try again later.",
         ),
         actions: [
           MaterialButton(
@@ -127,7 +144,6 @@ class _WithdrawMoneyPageState extends State<WithdrawMoneyPage> {
         ],
       ),
     );
-    Navigator.of(context).pop();
   }
 
   @override

@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class OrderDetails extends StatefulWidget {
@@ -109,8 +110,6 @@ class _OrderDetailsState extends State<OrderDetails> {
     _getSenderProfile();
     super.initState();
   }
-
-  // final requestFuture = FirebaseFirestore.instance.collection('jobs').doc(widget.delivery.id).get();
 
   @override
   Widget build(BuildContext context) {
@@ -291,6 +290,11 @@ class _OrderDetailsState extends State<OrderDetails> {
                               }
                               return const Icon(Icons.person);
                             },
+                          ),
+                          trailing: Text(
+                            DateFormat.yMMMEd().add_jm().format(
+                                  widget.delivery.pickupTime!.toDate(),
+                                ),
                           ),
                         ),
                       ),

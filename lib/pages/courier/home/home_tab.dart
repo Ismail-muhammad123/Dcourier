@@ -55,7 +55,7 @@ class _HomeTabState extends State<HomeTab> {
     var uid = FirebaseAuth.instance.currentUser!.uid;
 
     var userKyc =
-        await FirebaseFirestore.instance.collection("kyc").doc(uid).get();
+        await FirebaseFirestore.instance.collection("profiles").doc(uid).get();
     if (userKyc.data()!['verified'] == true) {
       await FirebaseFirestore.instance
           .collection("profiles")

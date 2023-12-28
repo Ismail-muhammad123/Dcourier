@@ -136,7 +136,7 @@ class _SMEHomePageState extends State<SMEHomePage> {
       const SnackBar(
         content: Text("New Delivery Job Created"),
       ),
-    ); 
+    );
 
     setState(() => _loading = false);
 
@@ -479,7 +479,7 @@ class _SMEHomePageState extends State<SMEHomePage> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      setState(() => _vehicleType = "trycyle");
+                      setState(() => _vehicleType = "tricycle");
                       _updateAmount();
                     },
                     child: Container(
@@ -489,10 +489,10 @@ class _SMEHomePageState extends State<SMEHomePage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(
-                          color: _vehicleType == "trycyle"
+                          color: _vehicleType == "tricycle"
                               ? accentColor
                               : Colors.grey,
-                          width: _vehicleType == "trycyle" ? 3 : 2,
+                          width: _vehicleType == "tricycle" ? 3 : 2,
                         ),
                       ),
                       child: Image.asset(

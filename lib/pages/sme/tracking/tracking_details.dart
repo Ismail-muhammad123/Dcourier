@@ -55,7 +55,7 @@ class _TrackingDetailState extends State<TrackingDetail> {
     double balance = 0;
     for (var i in transactions.docs) {
       balance = balance +
-          (i.data()['credit_amoun'] ?? 0) -
+          (i.data()['credit_amount'] ?? 0) -
           (i.data()['debit_amount'] ?? 0);
     }
     // var walletBalance = await getBalancefunc.call<num>();

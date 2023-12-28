@@ -55,7 +55,7 @@ class _TrackingPageState extends State<TrackingPage> {
                   const Padding(
                     padding: EdgeInsets.all(8.0),
                     child: Text("You can track the status of your items here"),
-                  )
+                  ),
                 ],
               );
             }
@@ -67,7 +67,8 @@ class _TrackingPageState extends State<TrackingPage> {
                 d.id = e.id;
                 return d;
               },
-            );
+            ).toList();
+            data.sort((a, b) => b.pickupTime!.compareTo(a.pickupTime!));
             return ListView(
               children: data
                   .map(

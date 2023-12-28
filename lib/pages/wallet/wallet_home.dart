@@ -27,6 +27,8 @@ class _WalletHomeState extends State<WalletHome> {
   bool _balanceVisible = true;
   double _availableBalance = 0;
 
+  bool _balanceLoaded = false;
+
   Wallet? _wallet;
 
   _getWallet() async {
@@ -44,6 +46,7 @@ class _WalletHomeState extends State<WalletHome> {
   }
 
   _getWalletBalance() async {
+    setState(() => _balanceLoaded = false);
     var transactions = await FirebaseFirestore.instance
         .collection("wallet_transactions")
         .where("uid", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
@@ -56,10 +59,10 @@ class _WalletHomeState extends State<WalletHome> {
     }
     // var walletBalance = await getBalancefunc.call<num>();
     // var balance = walletBalance.data;
-    print("balance: $balance");
 
     setState(() {
       _availableBalance = balance;
+      _balanceLoaded = true;
     });
   }
 
@@ -298,16 +301,18 @@ class _WalletHomeState extends State<WalletHome> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () async {
-                            await Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => WithdrawMoneyPage(
-                                  balance: _availableBalance,
-                                ),
-                              ),
-                            );
-                            _getWalletBalance();
-                          },
+                          onTap: _balanceLoaded
+                              ? () async {
+                                  await Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => WithdrawMoneyPage(
+                                        balance: _availableBalance,
+                                      ),
+                                    ),
+                                  );
+                                  _getWalletBalance();
+                                }
+                              : null,
                           child: Column(
                             children: [
                               Container(
