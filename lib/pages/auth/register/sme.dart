@@ -44,6 +44,7 @@ class _SMERegistrationPageState extends State<SMERegistrationPage> {
           email: _emailController.text.trim(),
           phoneNumber: _phoneNumberController.text.trim(),
           fullName: _nameController.text.trim(),
+          verified: true,
           accountType: "sme",
         );
         await FirebaseFirestore.instance
@@ -52,19 +53,17 @@ class _SMERegistrationPageState extends State<SMERegistrationPage> {
             .set(
               userprofile.toMap(),
             );
-
         setState(() => _loading = false);
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => VerificationPage(
               credential: userCred,
-              // phoneNumber: "+234${_phoneNumberController.text.trim()}",
             ),
           ),
         );
       } on FirebaseException catch (e) {
-        setState(() => _loading = false);
         setState(() {
+          _loading = false;
           errorMessage =
               "unable to create account with this email and password";
         });

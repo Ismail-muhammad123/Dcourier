@@ -188,7 +188,7 @@ class _VerificationPageState extends State<VerificationPage> {
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(
                 onTap: () async {
-                  await widget.credential.user!.sendEmailVerification();
+                  // await widget.credential.user!.sendEmailVerification();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text("Verification email sent"),

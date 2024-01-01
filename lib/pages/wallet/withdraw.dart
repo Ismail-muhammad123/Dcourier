@@ -124,26 +124,26 @@ class _WithdrawMoneyPageState extends State<WithdrawMoneyPage> {
         ),
       );
       Navigator.of(context).pop();
-    }
-
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        content: const Text(
-          "Failed to request withdrawal, please try again later.",
-        ),
-        actions: [
-          MaterialButton(
-            onPressed: () => Navigator.of(context).pop(),
-            color: accentColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text("Okay"),
+    } else {
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: const Text(
+            "Failed to request withdrawal, please try again later.",
           ),
-        ],
-      ),
-    );
+          actions: [
+            MaterialButton(
+              onPressed: () => Navigator.of(context).pop(),
+              color: accentColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text("Okay"),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override

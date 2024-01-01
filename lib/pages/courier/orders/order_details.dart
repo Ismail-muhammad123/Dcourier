@@ -235,6 +235,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                                             ],
                                           ),
                                         ),
+                                        const SizedBox(width: 4.0),
                                         MaterialButton(
                                           onPressed: () async {
                                             final Uri smsLaunchUri = Uri(
@@ -291,11 +292,6 @@ class _OrderDetailsState extends State<OrderDetails> {
                               return const Icon(Icons.person);
                             },
                           ),
-                          trailing: Text(
-                            DateFormat.yMMMEd().add_jm().format(
-                                  widget.delivery.pickupTime!.toDate(),
-                                ),
-                          ),
                         ),
                       ),
                 const Divider(),
@@ -351,7 +347,46 @@ class _OrderDetailsState extends State<OrderDetails> {
                             ),
                           ),
                         ],
-                      )
+                      ),
+                    ],
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    width: 200,
+                    child: Divider(),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.timer,
+                        color: Colors.green,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Pickup Time",
+                            style: TextStyle(
+                              color: primaryColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            DateFormat.yMMMEd().add_jm().format(
+                                  widget.delivery.pickupTime!.toDate(),
+                                ),
+                            style: TextStyle(
+                              color: accentColor,
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -495,83 +530,61 @@ class _OrderDetailsState extends State<OrderDetails> {
                     ? const Center(
                         child: CircularProgressIndicator(),
                       )
-                    : widget.request.status == "accepted"
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              widget.delivery.status != "enroute" &&
-                                      widget.delivery.status != "delivered"
-                                  ? MaterialButton(
-                                      onPressed: _setDeliveryPicked,
-                                      color: accentColor,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                      height: 50,
-                                      minWidth: 150,
-                                      child: const Text(
-                                        "set Picked",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    )
-                                  : const SizedBox(),
-                              widget.delivery.status != "delivered"
-                                  ? MaterialButton(
-                                      onPressed: _setDeliveryDelivered,
-                                      color: accentColor,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                      height: 50,
-                                      minWidth: 150,
-                                      child: const Text(
-                                        "Set Delivered",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    )
-                                  : const SizedBox()
-                            ],
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              MaterialButton(
-                                onPressed: _rejectRequest,
+                    : widget.delivery.status == "enroute"
+                        ? MaterialButton(
+                            onPressed: _setDeliveryDelivered,
+                            color: accentColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            height: 50,
+                            minWidth: 150,
+                            child: const Text(
+                              "Set Delivered",
+                              style: TextStyle(
                                 color: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  side: const BorderSide(color: Colors.red),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                height: 50,
-                                minWidth: 150,
-                                child: const Text(
-                                  "Reject",
-                                  style: TextStyle(
-                                    color: Colors.red,
-                                  ),
-                                ),
                               ),
-                              MaterialButton(
-                                onPressed: _acceptRequest,
-                                color: accentColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                height: 50,
-                                minWidth: 150,
-                                child: const Text(
-                                  "Accept",
-                                  style: TextStyle(
+                            ),
+                          )
+                        : widget.delivery.status == "delivered"
+                            ? const SizedBox()
+                            : Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  MaterialButton(
+                                    onPressed: _rejectRequest,
                                     color: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      side: const BorderSide(color: Colors.red),
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    height: 50,
+                                    minWidth: 150,
+                                    child: const Text(
+                                      "Reject",
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              )
-                            ],
-                          ),
+                                  MaterialButton(
+                                    onPressed: _acceptRequest,
+                                    color: accentColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    height: 50,
+                                    minWidth: 150,
+                                    child: const Text(
+                                      "Accept",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
               ],
             ),
           ),

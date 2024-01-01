@@ -21,10 +21,6 @@ class OrderRequestState extends State<OrderRequest> {
             "courier_id",
             isEqualTo: FirebaseAuth.instance.currentUser!.uid,
           )
-          .where(
-            "status",
-            isEqualTo: "requested",
-          )
           .snapshots();
 
   @override
@@ -74,7 +70,8 @@ class OrderRequestState extends State<OrderRequest> {
                   return j;
                 },
               )
-              .where((element) => element.status == "requested")
+              .where((element) =>
+                  element.status == "requested" || element.status == "accepted")
               .toList(),
         );
       },

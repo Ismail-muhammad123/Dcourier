@@ -30,6 +30,8 @@ class _TrackingDetailState extends State<TrackingDetail> {
   Profile? _courierProfile;
   bool _isLoading = false;
 
+  Uint8List? courierProfilePicture;
+
   var approveCourierFunction =
       FirebaseFunctions.instance.httpsCallable("acceptCourierForDelivery");
   var releaseDeliveryPayment =
@@ -38,19 +40,9 @@ class _TrackingDetailState extends State<TrackingDetail> {
   //     FirebaseFunctions.instance.httpsCallable("getWalletBalance");
 
   Future<double> _getWalletBalance() async {
-    // try {
-    // var walletBalance = await getBalancefunc.call<num>();
-    // var balance = walletBalance.data as double;
-    // print("balance: $balance");
-    // return balance;
-    // } on FirebaseFunctionsException catch (error) {
-    //   print(error.code);
-    //   print(error.details);
-    //   print(error.message);
-    // }
     var transactions = await FirebaseFirestore.instance
         .collection("wallet_transactions")
-        .where("owner", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .where("uid", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
         .get();
     double balance = 0;
     for (var i in transactions.docs) {
@@ -265,6 +257,16 @@ class _TrackingDetailState extends State<TrackingDetail> {
           .doc(d.data()['courier_id'])
           .get();
       var p = Profile.fromMap(courier.data()!);
+      FirebaseStorage.instance
+          .ref()
+          .child(p.profilePicture!)
+          .getData()
+          .then(
+            (value) => setState(() => courierProfilePicture = value!),
+          )
+          .onError((error, stackTrace) {
+        print("no profile picture");
+      });
       p.id = courier.id;
       setState(() {
         if (courier.exists) {
@@ -309,7 +311,6 @@ class _TrackingDetailState extends State<TrackingDetail> {
       floatingActionButton: _isLoading
           ? const CircularProgressIndicator()
           : widget.delivery.status == "paid" ||
-                  widget.delivery.status == "delivered" ||
                   widget.delivery.status == "delivered" ||
                   widget.delivery.status == 'recieved'
               ? null
@@ -508,8 +509,6 @@ class _TrackingDetailState extends State<TrackingDetail> {
                           surfaceTintColor: Colors.white,
                           shadowColor: accentColor,
                           child: ListTile(
-                            // onTap:
-                            //     _isLoading ? null : () => _createRequest(profile),
                             title: Text(_courierProfile!.fullName ?? ""),
                             isThreeLine: true,
                             subtitle: Column(
@@ -609,34 +608,20 @@ class _TrackingDetailState extends State<TrackingDetail> {
                               ],
                             ),
                             leading: _courierProfile!.profilePicture == null ||
-                                    _courierProfile!.profilePicture!.isEmpty
-                                ? null
-                                : FutureBuilder<Uint8List?>(
-                                    future: FirebaseStorage.instance
-                                        .ref()
-                                        .child(_courierProfile!.profilePicture!)
-                                        .getData(),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.hasData &&
-                                          snapshot.data!.isNotEmpty) {
-                                        var data = snapshot.data;
-
-                                        return Container(
-                                          height: 50,
-                                          width: 50,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(25),
-                                            border:
-                                                Border.all(color: Colors.grey),
-                                            image: DecorationImage(
-                                              image: MemoryImage(data!),
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                      return const Icon(Icons.person);
-                                    },
+                                    _courierProfile!.profilePicture!.isEmpty ||
+                                    courierProfilePicture == null
+                                ? const Icon(Icons.person)
+                                : Container(
+                                    height: 50,
+                                    width: 50,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(25),
+                                      border: Border.all(color: Colors.grey),
+                                      image: DecorationImage(
+                                        image:
+                                            MemoryImage(courierProfilePicture!),
+                                      ),
+                                    ),
                                   ),
                           ),
                         )

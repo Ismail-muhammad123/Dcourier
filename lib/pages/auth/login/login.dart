@@ -28,12 +28,14 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
     } on FirebaseAuthException catch (e) {
       print(e.message);
       print(e.code);
       setState(() => _errorMessage = e.message!);
     }
     setState(() => _loading = false);
+
   }
 
   // _registerWithPhoneNumber() async {
@@ -107,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
                     Text(
                       _errorMessage,
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.red),
+                      style: const TextStyle(color: Colors.red),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),

@@ -520,23 +520,30 @@ class _WalletHomeState extends State<WalletHome> {
                                 color: Colors.white,
                                 surfaceTintColor: Colors.white,
                                 child: ListTile(
-                                  title: Text((e.creditAmount!).toDouble() > 0.0
-                                      ? "Credit"
-                                      : "Debit"),
-                                  subtitle: Text(
-                                    DateFormat.yMMMEd().add_jm().format(
+                                  title: Row(
+                                    children: [
+                                      Text(
+                                          (e.creditAmount!).toDouble() > 0.0
+                                              ? "CREDIT: ${NumberFormat.currency(symbol: 'NGN ').format(e.creditAmount!)}"
+                                              : "DEBIT: ${NumberFormat.currency(symbol: 'NGN ').format(e.debitAmount!)}",
+                                          style: TextStyle(
+                                            color:
+                                                e.debitAmount! > e.creditAmount!
+                                                    ? Colors.red
+                                                    : Colors.green,
+                                          )),
+                                      const Spacer(),
+                                      Text(
+                                        DateFormat.yMd().format(
                                           e.time!.toDate(),
                                         ),
-                                    style: const TextStyle(color: Colors.grey),
+                                      ),
+                                    ],
                                   ),
-                                  trailing: Text(
+                                  subtitle: Text(
                                     e.description ??
                                         "${e.creditAmount! > 0 ? 'Credited' : 'Debited'} N ${e.creditAmount! > 0 ? e.creditAmount : e.debitAmount}",
-                                    style: TextStyle(
-                                      color: e.debitAmount! > e.creditAmount!
-                                          ? Colors.red
-                                          : Colors.green,
-                                    ),
+                                    style: const TextStyle(color: Colors.grey),
                                   ),
                                 ),
                               ),

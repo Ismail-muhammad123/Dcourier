@@ -112,6 +112,8 @@ class _AvailableCourierCardState extends State<AvailableCourierCard> {
 
   _createRequest(Profile courier) async {
     setState(() => _isLoading = true);
+
+
     var uid = FirebaseAuth.instance.currentUser!.uid;
     var prevReq = await FirebaseFirestore.instance
         .collection("requests")

@@ -33,7 +33,8 @@ class DeliveryHistoryState extends State<DeliveryHistory> {
             .map(
               (e) => Delivery.fromMap(e.data()),
             )
-            .where((element) => element.status == "delivered");
+            .where((element) =>
+                element.status == "delivered" || element.status == "recieved");
         return ListView(
           children: deliveries
               .map(
@@ -91,7 +92,10 @@ class _DeliveryHistoryTileState extends State<DeliveryHistoryTile> {
             ),
           ],
         ),
-        trailing: Icon(Icons.arrow_forward_ios),
+        trailing: Icon(
+          Icons.check,
+          color: Colors.green,
+        ),
       ),
     );
   }

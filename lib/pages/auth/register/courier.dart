@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:app/data/kyc_data.dart';
 import 'package:app/data/profile_data.dart';
 import 'package:app/data/wallet_data.dart';
-import 'package:app/pages/auth/register/verification.dart';
 import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -208,22 +207,21 @@ class CourierRegistrationPageState extends State<CourierRegistrationPage> {
 
       // Commit the batch
       await batch.commit();
-
+      // TODO: remove duplication of profile picture
       if (_passport != null) {
-      // UPLOAD Prfile picture
+        // UPLOAD Prfile picture
         var profilePicUploadTask = FirebaseStorage.instance
             .ref()
             .child("profile_picture/courier/${user.user!.uid}.jpg")
             .putData(_passport!);
         await profilePicUploadTask.whenComplete(() => null);
 
-      // UPLOAD KYC PASSPORT
+        // UPLOAD KYC PASSPORT
         var kycPassportUploadTask = FirebaseStorage.instance
             .ref()
             .child("kyc/passports/${user.user!.uid}.jpg")
             .putData(_passport!);
         await kycPassportUploadTask.whenComplete(() => null);
-
       } else {
         throw Exception();
       }

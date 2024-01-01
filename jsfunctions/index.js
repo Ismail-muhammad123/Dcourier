@@ -30,17 +30,18 @@ const firestore = getFirestore();
 
 export const approveCashout = https.onCall(async (data, context) => {
   try {
-    const uid = context.auth.uid;
     const ref = data.checkout_id;
     const amount = data.amount;
 
     const firestoreFirebase = firestore;
     const payoutRequest = firestoreFirebase.collection("checkouts").doc(ref);
+    const payoutRequestObject = payoutRequest.get();
+    const payoutRequestData = (await payoutRequestObject).data();
 
     // You can uncomment the following code if you want to fetch and calculate wallet_balance
     const userWalletTransactions = await firestoreFirebase
       .collection("wallet_transactions")
-      .where("uid", "==", uid)
+      .where("uid", "==", payoutRequestData.uid)
       .get();
     let walletBalance = 0;
     userWalletTransactions.forEach((transaction) => {
@@ -50,6 +51,7 @@ export const approveCashout = https.onCall(async (data, context) => {
 
     if (walletBalance >= amount) {
       await firestoreFirebase.collection("wallet_transactions").add({
+        uid: payoutRequestData.uid,
         credit_amount: 0,
         debit_amount: amount,
         description: `Withdrawal of NGN${amount}`,
@@ -76,13 +78,13 @@ export const releaseDeliveryPayment = https.onCall(async (data, context) => {
     const deliveryId = data.delivery_id;
 
     const firestoreFirebase = firestore;
-    const deliveryRef =  firestoreFirebase
-      .collection("jobs")
-      .doc(deliveryId);
-      const delivery =await deliveryRef.get();
+    const deliveryRef = firestoreFirebase.collection("jobs").doc(deliveryId);
+    const delivery = await deliveryRef.get();
 
     const batch = firestoreFirebase.batch();
-    const transactionsRef = firestoreFirebase.collection("transactions");
+    const transactionsRef = firestoreFirebase.collection("wallet_transactions");
+
+    // TODO calculate and subtract commission before adding transaction
 
     const receiverTransaction = {
       uid: delivery.data().courier_id,
@@ -93,7 +95,7 @@ export const releaseDeliveryPayment = https.onCall(async (data, context) => {
     };
 
     batch.create(transactionsRef.doc(), receiverTransaction);
-    batch.update(deliveryRef, {status: "recieved"})
+    batch.update(deliveryRef, { status: "recieved" });
 
     await batch.commit();
     return { status: "success" };
@@ -127,7 +129,7 @@ export const acceptCourierForDelivery = https.onCall(async (data, context) => {
         description: `payment for delivery ref:${deliveryId}`,
       };
 
-      firestoreFirebase.collection("transactions").add(transactionObj);
+      firestoreFirebase.collection("wallet_transactions").add(transactionObj);
       return { status: "success" };
     } else {
       return {

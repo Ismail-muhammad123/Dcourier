@@ -40,6 +40,11 @@ class _EditProfileFormState extends State<EditProfileForm> {
     _nameController.text = profile.fullName ?? "";
     _phoneNumberController.text = profile.phoneNumber ?? "";
     _addressController.text = profile.address ?? "";
+    if (mounted) {
+      setState(() {
+        myProfile = profile;
+      });
+    }
     if (profile.profilePicture != null && profile.profilePicture!.isNotEmpty) {
       FirebaseStorage.instance
           .ref()
@@ -49,11 +54,12 @@ class _EditProfileFormState extends State<EditProfileForm> {
         if (mounted) {
           setState(() => image = value);
         }
-      });
-    }
-    if (mounted) {
-      setState(() {
-        myProfile = profile;
+      }).onError((error, stackTrace) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Profile Picture not found!"),
+          ),
+        );
       });
     }
   }

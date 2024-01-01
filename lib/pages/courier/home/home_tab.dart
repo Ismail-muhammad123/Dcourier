@@ -19,29 +19,40 @@ class _HomeTabState extends State<HomeTab> {
   Set<Marker> _markers = {};
 
   _getCoodinatesFromAddress(String address) async {
-    List<Location> locations = await locationFromAddress(address);
-    var lat = locations.first.latitude;
-    var long = locations.first.longitude;
-    return LatLng(lat, long);
+    try {
+      List<Location> locations = await locationFromAddress(address);
+      var lat = locations.first.latitude;
+      var long = locations.first.longitude;
+      return LatLng(lat, long);
+    } catch (e) {
+      return;
+    }
   }
 
   _getDeliveries() async {
     var deliveries = await FirebaseFirestore.instance
         .collection("jobs")
-        .where("courier_d", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .where("courier_id", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
         .get();
-    Set<Marker> markers = <Marker>{};
-    for (var i in deliveries.docs) {
-      var d = Delivery.fromMap(i.data());
-      var marker = Marker(
-        markerId: MarkerId(d.recieverName ?? "-"),
-        position: await _getCoodinatesFromAddress(d.deliveryAddress!),
-      );
-      markers.add(marker);
+    if (deliveries.docs.isNotEmpty) {
+      Set<Marker> markers = <Marker>{};
+      for (var i in deliveries.docs) {
+        var d = Delivery.fromMap(i.data());
+        var cood = await _getCoodinatesFromAddress(d.deliveryAddress!);
+        if (cood != null) {
+          var marker = Marker(
+            markerId: MarkerId(d.recieverName ?? "-"),
+            position: cood,
+          );
+          markers.add(marker);
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _markers.addAll(markers);
+        });
+      }
     }
-    setState(() {
-      _markers.addAll(markers);
-    });
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -153,25 +164,26 @@ class _HomeTabState extends State<HomeTab> {
                   ),
                 ),
                 StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                    stream: FirebaseFirestore.instance
-                        .collection("profiles")
-                        .doc(FirebaseAuth.instance.currentUser!.uid)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData ||
-                          !snapshot.data!.exists ||
-                          snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
-                      }
-                      return Switch(
-                        activeColor: primaryColor,
-                        inactiveThumbColor: accentColor,
-                        activeTrackColor: accentColor,
-                        inactiveTrackColor: tartiaryColor,
-                        value: snapshot.data!.data()!['available'],
-                        onChanged: _updateAvailability,
-                      );
-                    }),
+                  stream: FirebaseFirestore.instance
+                      .collection("profiles")
+                      .doc(FirebaseAuth.instance.currentUser!.uid)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData ||
+                        !snapshot.data!.exists ||
+                        snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    }
+                    return Switch(
+                      activeColor: primaryColor,
+                      inactiveThumbColor: accentColor,
+                      activeTrackColor: accentColor,
+                      inactiveTrackColor: tartiaryColor,
+                      value: snapshot.data!.data()!['available'],
+                      onChanged: _updateAvailability,
+                    );
+                  },
+                ),
               ],
             ),
           ),

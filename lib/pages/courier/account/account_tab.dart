@@ -30,15 +30,29 @@ class AccountTabState extends State<AccountTab> {
         await FirebaseFirestore.instance.collection("profiles").doc(uid).get();
     if (profile.exists) {
       var p = Profile.fromMap(profile.data()!);
-      var profilePic = await FirebaseStorage.instance
-          .ref()
-          .child(p.profilePicture!)
-          .getData();
       if (mounted) {
         setState(() {
-          _profilePic = profilePic;
           name = p.fullName!;
           phoneNumber = p.phoneNumber!;
+        });
+      }
+      if (p.profilePicture != null && p.profilePicture!.isNotEmpty) {
+        FirebaseStorage.instance
+            .ref()
+            .child(p.profilePicture!)
+            .getData()
+            .then((value) {
+          if (mounted) {
+            setState(() {
+              _profilePic = value;
+            });
+          }
+        }).onError((error, stackTrace) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Profile Picture not found!"),
+            ),
+          );
         });
       }
     }

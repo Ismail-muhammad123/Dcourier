@@ -73,12 +73,14 @@ class _HomePageState extends State<HomePage> {
         );
         break;
       case "courier":
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                "Your Account is not verified yet, you will not be able to accept any delivery"),
-          ),
-        );
+        if (profile.data()!['verified'] == false) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  "Your Account is not verified yet, you will not be able to accept any delivery"),
+            ),
+          );
+        }
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => const CourierHome(),
