@@ -62,8 +62,6 @@ class _HomePageState extends State<HomePage> {
               ? "courier"
               : "";
     }
-    print("Account type:");
-    print(accountType);
     switch (accountType) {
       case "sme":
         Navigator.of(context).pushReplacement(

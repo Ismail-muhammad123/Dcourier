@@ -44,7 +44,7 @@ class CourierRegistrationPageState extends State<CourierRegistrationPage> {
   Uint8List? _IDBack;
 
   String _idType = "NIN";
-  String _vehicleType = "trycycle";
+  String _vehicleType = "tricycle";
 
   final db = FirebaseFirestore.instance;
 

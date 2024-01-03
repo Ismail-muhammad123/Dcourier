@@ -64,7 +64,7 @@ class CourierListState extends State<CourierList> {
                 p.id = e.id;
                 return p;
               });
-              
+
               return ListView(
                 children: data
                     .map(
@@ -112,7 +112,6 @@ class _AvailableCourierCardState extends State<AvailableCourierCard> {
 
   _createRequest(Profile courier) async {
     setState(() => _isLoading = true);
-
 
     var uid = FirebaseAuth.instance.currentUser!.uid;
     var prevReq = await FirebaseFirestore.instance
